@@ -30,7 +30,8 @@ export default {
 
   },
   mounted(){
-    Svg = this.Snap('#svg')
+    Svg = this.Snap('#svg');
+    this.focusSvgItem();
     this.bindDrag();
   },
   watch:{
@@ -54,7 +55,7 @@ export default {
       antAni(){//蚂蚁线动画
         let _lineLength = Svg.select(`#ant${this.actLayerId}`).getTotalLength();
         let ani = ()=>{
-          Snap.animate(0, _lineLength*150, (val)=>{
+          this.Snap.animate(0, _lineLength*150, (val)=>{
             Svg.select(`#ant${this.actLayerId}`).attr({
               strokeDashoffset:val,
             });
@@ -64,10 +65,39 @@ export default {
         }
         ani();
       },
+      focusSvgItem(){
+        let that = this;
+        Svg.selectAll('.svgItem').forEach((val,i,arr)=>{
+          val.unclick();
+          val.click((e)=>{
+            let _dataset = e.currentTarget.dataset;
+            that.actLayerId = _dataset.id;//更新活动元素ID
+            that.addAnt(_dataset.id);//添加蚂蚁线
+          });
+        })        
+      },
       removeAnt(){
         Svg.selectAll('.antBorder').forEach((val,i,arr)=>{
           val.remove();
         })
+      },
+      addAnt(_time){
+
+        let that = this;
+        this.removeAnt();
+        if(Svg.selectAll(`#ant${_time}`).length == 0){
+          let _lineBox = Svg.select(`#id${this.actLayerId}`).getBBox();
+          let _line = `M${_lineBox.x} ${_lineBox.y}V${_lineBox.y2}H${_lineBox.x2}V${_lineBox.y}Z`;             
+          let _box = Svg.paper.path(_line).attr({
+              stroke: "#333",
+              strokeWidth: 1,
+              fill:"none",
+              strokeDasharray:"2 2",
+              strokeDashoffset:0,
+              id:`ant${_time}`,
+              class:"antBorder"
+          });
+        }
       },
       clickSvgItem(e){
         Svg.selectAll('.svgItem').forEach((val,i,arr)=>{
@@ -102,6 +132,7 @@ export default {
       },
       drawFirst(obj){
         let _time = new Date().getTime();
+        this.actLayerId = _time;
         switch( this.drawType ){
           case "xuanze":{//选择.....
             break;
@@ -111,7 +142,7 @@ export default {
           }
           case "xiantiao":{//线段
             if( this.timer ){
-              let _line = Svg.paper.line( this.coordinateDown[0],this.coordinateDown[1],this.coordinateDown[0],this.coordinateDown[1] ).attr({
+              let _line = Svg.paper.line( this.coordinateDown[0],this.coordinateDown[1],this.coordinateDown[0]+1,this.coordinateDown[1]+1 ).attr({
                   stroke: "#000",
                   strokeWidth: 5,
                   class:"svgItem",
@@ -119,21 +150,14 @@ export default {
                   'data-id':_time
               });
               let line = `M${this.coordinateDown[0]},${this.coordinateDown[1]}`
-              this.removeAnt();
-              let _box = Svg.paper.path().attr({
-                  stroke: "#333",
-                  strokeWidth: 1,
-                  strokeDasharray:"2 2",
-                  strokeDashoffset:0,
-                  id:`ant${_time}`,
-                  class:"antBorder"
-              });
-              Svg.paper.g(_line,_box).attr({
+              this.addAnt(_time);
+              Svg.paper.g(_line).attr({
                   fill:"none",
                   class:"gSvgItem",
                   id:'gid'+_time
               })
               this.addLayer( _time );
+              this.focusSvgItem();
             }
             break;
           }
@@ -159,7 +183,6 @@ export default {
             break;
           }
         }
-        this.actLayerId = _time;
       },
       draw(n){
         switch(this.drawType){
