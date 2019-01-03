@@ -4,30 +4,28 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build"
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "axios": "^0.18.0",
+    "imports-loader": "^0.8.0",
+    "qs": "^6.6.0",
     "register-service-worker": "^1.5.2",
+    "snapsvg": "^0.5.1",
     "vue": "^2.5.21",
+    "vue-mathjax": "^0.0.5",
     "vue-router": "^3.0.1",
+    "vuescroll": "^4.9.2",
     "vuex": "^3.0.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.1.1",
     "@vue/cli-plugin-pwa": "^3.1.1",
     "@vue/cli-service": "^3.1.1",
+    "@vue/eslint-config-prettier": "^4.0.1",
     "less": "^3.0.4",
     "less-loader": "^4.1.0",
     "vue-template-compiler": "^2.5.21"
-  },
-  "postcss": {
-    "plugins": {
-      "autoprefixer": {}
-    }
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not ie <= 8"
-  ]
+  }
 }
