@@ -56,7 +56,7 @@ export default {
     mouseUp(e){
       this.$refs.left.hid()
       this.$store.state.coordinateUp = [ e.pageX,e.pageY ];// 记下鼠标抬起的坐标.....
-      this.$refs.center.timer = false;
+      this.$store.state.timer = false;
     },
     mouseleave(e){
       this.mouseUp(e);

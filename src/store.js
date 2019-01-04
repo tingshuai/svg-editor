@@ -13,74 +13,55 @@ export default new Vuex.Store({
     actLayerId:null,//当前活动层.....
     drawType:"xuanze",//画笔类型.....
     layer:[],//图层....
+    timer:null,//是否结束绘制....
   },
   mutations: {
-    draw(context,obj){
-      let _time = null;
-      if( obj.event.type == "mousedown" ){
-        _time = new Date().getTime();
-        this.state.actLayerId = _time;
-        obj._me.addLayer();
-      }
-      switch(context.drawType){
-        case "xuanze":{//选择.....
-          break;
-        }
-        case "wenzi":{//文字工具......
-          break;
-        }
-        case "xiantiao":{//线段
-          if( obj._me.timer ){
-            if( obj.event.type == "mousedown" ){
-              let _line = context.Svg.paper.line( context.coordinateOffsetDown[0]-5,context.coordinateOffsetDown[1]-5,context.coordinateOffsetDown[0],context.coordinateOffsetDown[1] ).attr({
-                  stroke: "#000",
-                  strokeWidth: 5,
-                  class:"svgItem",
-                  id:'id'+ context.actLayerId,
-                  'data-id':this.state.actLayerId
-              });
-              context.Svg.paper.g(_line).attr({
-                fill:"none",
-                  class:"gSvgItem",
-                  id:'gid'+this.state.actLayerId
-              })
-              obj._me.addAnt();
-              obj._me.focusSvgItem();
-            }else if(obj.event.type == "mousemove"){
-              context.Svg.select(`#id${context.actLayerId}`).attr({
-                x2:context.coordinateMove[0] - context.coordinateDown[0] + context.coordinateOffsetDown[0],
-                y2:context.coordinateMove[1] - context.coordinateDown[1] + context.coordinateOffsetDown[1]
-              });
-              let _lineBox = context.Svg.select(`#id${context.actLayerId}`).getBBox();
-              let _line = `M${_lineBox.x-2} ${_lineBox.y-2}V${_lineBox.y2+2}H${_lineBox.x2+2}V${_lineBox.y-2}Z`;
-              context.Svg.select(`#ant${context.actLayerId}`).attr({
-                d:_line
-              });//更新蚂蚁线范围
-            }
-          }          
-          break;
-        }
-        case "icon-test3":{//钢笔工具.....
-          break;
-        }
-        case "bi1":{//画笔工具...
-          break;
-        }
-        case "juxing1":{//矩形工具.....
-          break;
-        }
-        case "tuoyuanxing":{//椭圆工具.....
-          break;
-        }
-        case "xiangpi":{//橡皮工具....
-          break;
-        }
-        case "yanse1":{//色板
-          break;
-        }
-        default:{
-          break;
-        }
+    focusSvgItem(context){
+      context.Svg.selectAll('.svgItem').forEach((val,i,arr)=>{
+        val.unclick();
+        val.mousedown((e)=>{
+          let _dataset = e.currentTarget.dataset;
+          context.actLayerId = _dataset.id;//更新活动元素ID
+          this.commit("addAnt");//添加蚂蚁线
+        });
+      })
+    },    
+    bindDrag(context){
+      context.Svg.selectAll(".gSvgItem").forEach((ele,i,arr)=>{
+          ele.drag();
+      });
+    },    
+    addLayer(context){
+      context.layer.push({
+        name:"图层" + (context.layer.length + 1),
+        id:context.actLayerId
+      })
+    },
+    removeAnt(context){
+      context.Svg.selectAll('.antBorder').forEach((val,i,arr)=>{
+        val.remove();
+      })
+    },
+    addAnt(context){
+      this.commit('removeAnt')
+      if(context.Svg.selectAll(`#ant${context.actLayerId}`).length == 0){
+        let _lineBox = context.Svg.select(`#id${context.actLayerId}`).getBBox();
+        let _line = `M${_lineBox.x-2} ${_lineBox.y-2}V${_lineBox.y2+2}H${_lineBox.x2+2}V${_lineBox.y-2}Z`;   
+        let promise = new Promise((resolve,reject)=>{
+          let _box = context.Svg.paper.path(_line).attr({
+              stroke: "#333",
+              strokeWidth: 1,
+              fill:"none",
+              strokeDasharray:"2 2",
+              strokeDashoffset:0,
+              id:`ant${context.actLayerId}`,
+              class:"antBorder"
+          });
+          resolve(_box);
+        })
+        promise.then((_box)=>{
+            context.Svg.select(`#gid${context.actLayerId}`).append(_box);
+        })
       }
     }
   },
