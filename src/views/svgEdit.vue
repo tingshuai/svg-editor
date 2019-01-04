@@ -1,9 +1,9 @@
 <template>
-  <section class="container">
+  <section class="container" @mouseleave.stop="mouseleave" @mouseup="mouseUp" @mousemove="mousemove">
     <top></top>
     <div class="bottom">
       <left ref="left" @selTool="selTool"></left>
-      <center ref="center" :sel-type="selType"></center>
+      <center ref="center" :coordinateMove="coordinateMove" :sel-type="selType"></center>
       <right></right>
     </div>
   </section>
@@ -26,6 +26,7 @@ export default {
     return {
       formula: "",
       selType: "",
+      coordinateMove:[],
       ops:{
         
       }
@@ -37,12 +38,6 @@ export default {
     this.formula =  "$$\\ce{\\frac{[Hg^2+][Hg]}{[co2^2+]}}$$";
     // MathJax.Hub.Queue(["Typeset", MathJax.Hub])
     let _this = this;
-    document.addEventListener('click', (e)=> {
-      _this.$refs.left.hid();
-    })
-    document.addEventListener('mouseup', (e)=> {
-      _this.$refs.center.timer = false;
-    })
     document.addEventListener('contextmenu', (e)=> {
       e.preventDefault();
     })
@@ -53,6 +48,18 @@ export default {
   methods:{
     handleScroll(vertical, horizontal, nativeEvent){
     
+    },
+    mousemove(e){
+      this.coordinateMove = [e.pageX,e.pageY];
+      this.$store.state.coordinateMove = [e.pageX,e.pageY];
+    },
+    mouseUp(e){
+      this.$refs.left.hid()
+      this.$store.state.coordinateUp = [ e.pageX,e.pageY ];// 记下鼠标抬起的坐标.....
+      this.$refs.center.timer = false;
+    },
+    mouseleave(e){
+      this.mouseUp(e);
     },
     selTool(type){
       this.selType = type;
