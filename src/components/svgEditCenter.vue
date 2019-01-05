@@ -1,6 +1,16 @@
 <template>
       <section class="center">
         <svg id="svg" class="svg" @mousedown="mousedown" :class="selType" width="80%" height="80%" style="background-color: white;" xmlns="http://www.w3.org/2000/svg" version="1.1"></svg>
+        <div class="posiMsg" :style="{'left':dragPosition.x +'px','top':dragPosition.y + 'px'}" v-if="movePosition.show">
+          <section class="part part1">
+            <span class="posiType"><i :class="movePosition.isRight" class="iconfont icon-zhiding"></i>： </span>
+            <span class="value">{{ movePosition.x }}&thinsp;px</span>
+          </section>
+          <section class="part part2">
+            <span class="posiType"><i :class="movePosition.isUp" class="iconfont icon-zhiding"></i>： </span>
+            <span class="value">{{ movePosition.y }}&thinsp;px</span>
+          </section>
+        </div>
       </section>
 </template>
 <script>
@@ -24,10 +34,27 @@ export default {
   data () {
     return {
       layer:[],//图层......
+      moveType:"",
+      dragPosition:{
+        x:0,
+        y:0
+      },
+      movePosition:{
+        x:0,
+        y:0,
+        show:false,
+        isUp:"toUp",
+        isRight:"toRight"
+      }
     }
   },
   created(){
 
+  },
+  computed:{
+    coordinateClientMove(){
+      return this.$store.state.itemMoveMsg;
+    }
   },
   mounted(){
     Svg = this.Snap('#svg');
@@ -57,6 +84,28 @@ export default {
         this.draw({ event:{type:"mousemove"} });
       },
       deep:true
+    },
+    coordinateClientMove:{
+      handler(n,o){
+        let _storeState = this.$store.state;
+        if( _storeState.itemMoveMsg.state == "move" ){
+          this.dragPosition.x = n.cx + 10;
+          this.dragPosition.y = n.cy - 50;
+          this.movePosition.x = Math.abs(n.x);
+          this.movePosition.y = Math.abs(n.y);
+          n.x > 0 ? this.movePosition.isRight = 'toRight' : this.movePosition.isRight = 'toLeft';
+          n.y > 0 ? this.movePosition.isUp = 'toUp' : this.movePosition.isUp = 'toBottom';
+        }else if( _storeState.itemMoveMsg.state == "end" ){
+          this.movePosition.show = false;
+        }else if( _storeState.itemMoveMsg.state == "start"){
+          this.movePosition.x = 0;
+          this.movePosition.y = 0;
+          this.dragPosition.x = n.cx + 10;
+          this.dragPosition.y = n.cy - 50;          
+          this.movePosition.show = true;
+        }
+      },
+      deep:true
     }
   },
   methods:{
@@ -81,6 +130,7 @@ export default {
       _storeState.coordinateDown = [ e.pageX,e.pageY ];//记录鼠标按下的坐标....
       _storeState.coordinateOffsetDown = [ e.offsetX,e.offsetY ];
       this.draw({ event:{type:"mousedown"} });
+      _storeState.mouseevent = 1;
       e.preventDefault();
     },
     draw(obj){
@@ -170,21 +220,13 @@ export default {
   .svg{
     .actItem{
       .gSvgItem.antBorder{
-        opacity: 1;
-      }
-    }
-    .gSvgItem{
-      .antBorder{
-        opacity: 0;
-      }
-    }
-    :hover{
 
+      }
     }
   }
   .svg.xuanze{
-    &:hover{
-      cursor: default;
+      .svgItem{
+          cursor: pointer;
     }
   }
   .svg.xiantiao,.svg.icon-test3,.svg.juxing1,.svg.tuoyuanxing{
@@ -200,6 +242,46 @@ export default {
   .svg.bi1,.svg.xiangpi{
     &:hover{
       
+    }
+  }
+}
+.posiMsg{
+  position: fixed;
+  display: flex;
+  width: auto;
+  height: 50px;
+  background-color: rgba(0,0,0,0.7);
+  border-radius: 4px;
+  overflow: hidden;
+  justify-content: space-between;
+  flex-direction: column;
+  text-align: left;
+  padding: 5px 10px;
+  color: white;
+  font-size: 12px;
+  .part{
+    flex-grow: 1;
+    line-height: 20px;
+    .posiType{
+      .iconfont{
+        font-size: 12px;
+        display: inline-block;
+      }
+      .toLeft{
+        transform: rotate(-90deg)
+      }
+      .toRight{
+        transform: rotate(90deg);
+      }
+      .toUp{
+        transform: rotate(180deg)
+      }
+      .toBottom{
+        transform: rotate(0deg)
+      }
+    }
+    .value{
+
     }
   }
 }

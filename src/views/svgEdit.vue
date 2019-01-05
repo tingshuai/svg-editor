@@ -54,9 +54,11 @@ export default {
       this.$store.state.coordinateMove = [e.pageX,e.pageY];
     },
     mouseUp(e){
+      let _storestate = this.$store.state;
       this.$refs.left.hid()
-      this.$store.state.coordinateUp = [ e.pageX,e.pageY ];// 记下鼠标抬起的坐标.....
-      this.$store.state.timer = false;
+      _storestate.coordinateUp = [ e.pageX,e.pageY ];// 记下鼠标抬起的坐标.....
+      _storestate.timer = false;
+      _storestate.mouseevent = 0;
     },
     mouseleave(e){
       this.mouseUp(e);

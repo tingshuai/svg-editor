@@ -14,6 +14,15 @@ export default new Vuex.Store({
     drawType:"xuanze",//画笔类型.....
     layer:[],//图层....
     timer:null,//是否结束绘制....
+    mouseevent:0,//0无事件,1左键按下，2右键按下....
+    itemMoveMsg:{
+      x:"",
+      y:"",
+      cx:"",
+      cy:"",
+      e:"",
+      state:""
+    }
   },
   mutations: {
     focusSvgItem(context){
@@ -28,9 +37,40 @@ export default new Vuex.Store({
     },    
     bindDrag(context){
       context.Svg.selectAll(".gSvgItem").forEach((ele,i,arr)=>{
-          ele.drag();
+        ele.drag();
+        let onend = (e)=>{
+          context.itemMoveMsg.state = "end"
+        }
+        let onmove = (x,y,cx,cy,e)=>{
+          context.itemMoveMsg.x = x;
+          context.itemMoveMsg.y = y;
+          context.itemMoveMsg.cx = cx;
+          context.itemMoveMsg.cy = cy;
+          context.itemMoveMsg.e = e;
+          context.itemMoveMsg.state = "move"
+        }
+        let onstart = (cx,cy,e)=>{
+          context.itemMoveMsg.cx = cx;
+          context.itemMoveMsg.cy = cy;          
+          context.itemMoveMsg.state = "start"
+        }
+        ele.drag(onmove, onstart, onend)
       });
-    },    
+      context.Svg.selectAll(".svgItem").forEach((ele,i,arr)=>{
+        console.log(ele);
+        
+        ele.hover((e)=>{
+          ele.attr({
+            cursor:"move"
+          })
+        });
+      });
+      context.Svg.selectAll(".gSvgItem").forEach((ele,i,arr)=>{
+        ele.mousemove((e)=>{
+          console.log(e);
+        });
+      });      
+    },
     addLayer(context){
       context.layer.push({
         name:"图层" + (context.layer.length + 1),
