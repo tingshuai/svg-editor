@@ -173,8 +173,11 @@ export default {
               let _lineBox = Svg.select(`#id${_storeState.actLayerId}`).getBBox();
               let _line = `M${_lineBox.x-2} ${_lineBox.y-2}V${_lineBox.y2+2}H${_lineBox.x2+2}V${_lineBox.y-2}Z`;
               Svg.select(`#ant${_storeState.actLayerId}`).attr({
-                d:_line
+                d:_line,
+                // transform:scale()
               });//更新蚂蚁线范围
+              console.log(obj.event);
+              
             }
           }          
           break;

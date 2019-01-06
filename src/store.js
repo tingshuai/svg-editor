@@ -86,6 +86,7 @@ export default new Vuex.Store({
       this.commit('removeAnt')
       if(context.Svg.selectAll(`#ant${context.actLayerId}`).length == 0){
         let _lineBox = context.Svg.select(`#id${context.actLayerId}`).getBBox();
+        console.log( _lineBox );
         let _line = `M${_lineBox.x-2} ${_lineBox.y-2}V${_lineBox.y2+2}H${_lineBox.x2+2}V${_lineBox.y-2}Z`;   
         let promise = new Promise((resolve,reject)=>{
           let _box = context.Svg.paper.path(_line).attr({
