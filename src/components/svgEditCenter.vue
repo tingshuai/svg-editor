@@ -134,13 +134,7 @@ export default {
       e.preventDefault();
     },
     draw(obj){
-      let _time = null;
       let _storeState = this.$store.state;
-      if( obj.event.type == "mousedown" ){
-        _time = new Date().getTime();
-        _storeState.actLayerId = _time;
-        this.$store.commit("addLayer");
-      }
       switch(_storeState.drawType){
         case "xuanze":{//选择.....
           break;
@@ -151,6 +145,7 @@ export default {
         case "xiantiao":{//线段
           if( _storeState.timer ){
             if( obj.event.type == "mousedown" ){
+              this.$store.commit("addLayer");
               let _line = Svg.paper.line( _storeState.coordinateOffsetDown[0]-5,_storeState.coordinateOffsetDown[1]-5,_storeState.coordinateOffsetDown[0],_storeState.coordinateOffsetDown[1] ).attr({
                   stroke: "#000",
                   strokeWidth: 5,
@@ -170,14 +165,7 @@ export default {
                 x2:_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0],
                 y2:_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]
               });
-              let _lineBox = Svg.select(`#id${_storeState.actLayerId}`).getBBox();
-              let _line = `M${_lineBox.x-2} ${_lineBox.y-2}V${_lineBox.y2+2}H${_lineBox.x2+2}V${_lineBox.y-2}Z`;
-              Svg.select(`#ant${_storeState.actLayerId}`).attr({
-                d:_line,
-                // transform:scale()
-              });//更新蚂蚁线范围
-              console.log(obj.event);
-              
+              this.$store.commit('addAnt');
             }
           }          
           break;

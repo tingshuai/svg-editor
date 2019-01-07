@@ -55,10 +55,11 @@ export default {
     },
     mouseUp(e){
       let _storestate = this.$store.state;
-      this.$refs.left.hid()
+      this.$refs.left.hid();
       _storestate.coordinateUp = [ e.pageX,e.pageY ];// 记下鼠标抬起的坐标.....
       _storestate.timer = false;
       _storestate.mouseevent = 0;
+      this.$store.commit("bindResize")
     },
     mouseleave(e){
       this.mouseUp(e);
