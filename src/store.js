@@ -50,6 +50,7 @@ export default new Vuex.Store({
           context.itemMoveMsg.e = e;
           context.itemMoveMsg.state = "move"
           that.commit("addAnt");
+          that.commit("bindResize");
         }
         let onstart = (cx,cy,e)=>{
           context.itemMoveMsg.cx = cx;
@@ -58,9 +59,6 @@ export default new Vuex.Store({
         }
         ele.drag(onmove, onstart, onend);
       });
-      if(context.Svg.selectAll(`#ant${context.actLayerId}`).length != 0){
-        this.commit("addAnt");
-      }
       context.Svg.selectAll(".svgItem").forEach((ele,i,arr)=>{
         ele.hover((e)=>{
           ele.attr({
@@ -101,7 +99,6 @@ export default new Vuex.Store({
     addAnt(context){
       this.commit('removeAnt')
       if(context.Svg.selectAll(`#ant${context.actLayerId}`).length == 0){
-        console.log(context.actLayerId);
         let _lineBox = context.Svg.select(`#id${context.actLayerId}`).getBBox();
         let _lineTop = context.Svg.paper.line(_lineBox.x,_lineBox.y,_lineBox.x2,_lineBox.y).attr({class:"lineTop",stroke: "#333",strokeWidth: 1,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
         let _lineRight = context.Svg.paper.line(_lineBox.x2,_lineBox.y,_lineBox.x2,_lineBox.y2).attr({class:"lineRight",stroke: "#333",strokeWidth: 1,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
