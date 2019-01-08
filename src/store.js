@@ -5,6 +5,7 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    Snap:null,
     Svg:null,
     coordinateDown:[],//鼠标按下的坐标.....
     coordinateUp:[],//鼠标抬起的坐标.....   
@@ -25,7 +26,7 @@ export default new Vuex.Store({
     }
   },
   mutations: {
-    focusSvgItem(context){
+    bindFocusEvent(context){
       context.Svg.selectAll('.svgItem').forEach((val,i,arr)=>{
         val.unclick();
         val.mousedown((e)=>{
@@ -79,48 +80,110 @@ export default new Vuex.Store({
       context.Svg.selectAll('.antBorder').forEach((val,i,arr)=>{
         val.remove();
       })
+      context.Snap('#svgNoShow').selectAll('line').forEach((val,i,arr)=>{
+        val.remove();
+      })  
+      context.Snap('#svgNoShow').selectAll('rect').forEach((val,i,arr)=>{
+        val.remove();
+      })             
     },
     bindResize(context){
       if(context.Svg.selectAll(`#ant${context.actLayerId}`).length != 0){
-        context.Svg.select('.squareLT').attr({cursor:"nw-resize"});
-        context.Svg.select('.squareCT').attr({cursor:"ns-resize"});
-        context.Svg.select('.squareRT').attr({cursor:"ne-resize"});
-        context.Svg.select('.squareCR').attr({cursor:"ew-resize"});
-        context.Svg.select('.squareBR').attr({cursor:"nw-resize"});
-        context.Svg.select('.squareBC').attr({cursor:"ns-resize"});
-        context.Svg.select('.squareBL').attr({cursor:"ne-resize"});
-        context.Svg.select('.squareCL').attr({cursor:"ew-resize"});
-        context.Svg.select('.lineTop').attr({cursor:"ns-resize"});
-        context.Svg.select('.lineRight').attr({cursor:"ew-resize"});
-        context.Svg.select('.lineBottom').attr({cursor:"ns-resize"});
-        context.Svg.select('.lineLeft').attr({cursor:"ew-resize"});
+          let bind = (target,type)=>{
+            context.Svg.select(`.${target}`).attr({cursor:type,'data-type':target});
+            let _id = null;
+            let onend = (e)=>{
+              console.log(e);
+              e.stopPropagation();
+            }
+            let onmove = (x,y,cx,cy,e)=>{
+              this.commit("resize",{"x":x,"y":y,"cx":cx,"cy":cy,"e":e,"type":target,"dragger":type,id:_id});
+              e.stopPropagation();
+            }
+            let onstart = (cx,cy,e)=>{
+              console.log(cx,cy,e);
+              _id = e.srcElement.dataset.id;
+              e.stopPropagation();
+            }
+            context.Svg.select(`.${target}`).drag(onmove,onstart,onend);
+          }
+          context.Svg.select('.squareLT') != null ? bind('squareLT',"nw-resize") : null;
+          context.Svg.select('.squareCT') != null ? bind('squareCT',"ns-resize") : null;
+          context.Svg.select('.squareRT') != null ? bind('squareRT',"ne-resize") : null;
+          context.Svg.select('.squareCR') != null ? bind('squareCR',"ew-resize") : null;
+          context.Svg.select('.squareBR') != null ? bind('squareBR',"nw-resize") : null;
+          context.Svg.select('.squareBC') != null ? bind('squareBC',"ns-resize") : null;
+          context.Svg.select('.squareBL') != null ? bind('squareBL',"ne-resize") : null;
+          context.Svg.select('.squareCL') != null ? bind('squareCL',"ew-resize") : null;
+          context.Svg.select('.lineTop') != null ? bind('lineTop',"ns-resize") : null;
+          context.Svg.select('.lineRight') != null ? bind('lineRight',"ew-resize") : null;
+          context.Svg.select('.lineBottom') != null ? bind('lineBottom',"ns-resize") : null;
+          context.Svg.select('.lineLeft') != null ? bind('lineLeft',"ew-resize") : null;
+      }
+    },
+    resize(context,obj){
+      let _ele = context.Svg.select(`#id${obj.id}`);
+      let _changeSize = ()=>{
+        if( obj.type == "squareLT" ){
+          if( _ele.type == "line" ){
+            if( obj.e.altKey ){
+  
+            }else{
+              
+            }
+          }else if( _ele.type == "rect" ){
+  
+          }
+        }else if( obj.type == "squareCT" || obj.type == "lineTop" ){
+
+        }else if( obj.type == "squareRT" ){
+          
+        }else if( obj.type == "squareCR" || obj.type == "lineRight" ){
+
+        }else if( obj.type == "squareBR" ){
+
+        }else if( obj.type == "squareBC" || obj.type == "lineBottom" ){
+
+        }else if( obj.type == "squareBL"){
+
+        }else if( obj.type == "squareCL" || obj.type == "lineLeft" ){
+
+        }
+      }
+      if( obj.e.altKey ){
+
+      }else{
+
       }
     },
     addAnt(context){
       this.commit('removeAnt')
       if(context.Svg.selectAll(`#ant${context.actLayerId}`).length == 0){
         let _lineBox = context.Svg.select(`#id${context.actLayerId}`).getBBox();
-        let _lineTop = context.Svg.paper.line(_lineBox.x,_lineBox.y,_lineBox.x2,_lineBox.y).attr({class:"lineTop",stroke: "#333",strokeWidth: 1,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
-        let _lineRight = context.Svg.paper.line(_lineBox.x2,_lineBox.y,_lineBox.x2,_lineBox.y2).attr({class:"lineRight",stroke: "#333",strokeWidth: 1,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
-        let _lineBottom = context.Svg.paper.line(_lineBox.x,_lineBox.y2,_lineBox.x2,_lineBox.y2).attr({class:"lineBottom", stroke: "#333",strokeWidth: 1,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
-        let _lineLeft = context.Svg.paper.line(_lineBox.x,_lineBox.y,_lineBox.x,_lineBox.y2).attr({class:"lineLeft",stroke: "#333",strokeWidth: 1,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
+        let _color = "#00bf63";
+        let _lineTop = context.Snap('#svgNoShow').paper.line(_lineBox.x,_lineBox.y,_lineBox.x2,_lineBox.y).attr({"data-id":context.actLayerId,class:"lineTop",stroke: _color,strokeWidth: 1,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
+        let _lineRight = context.Snap('#svgNoShow').paper.line(_lineBox.x2,_lineBox.y,_lineBox.x2,_lineBox.y2).attr({"data-id":context.actLayerId,class:"lineRight",stroke: _color,strokeWidth: 1,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
+        let _lineBottom = context.Snap('#svgNoShow').paper.line(_lineBox.x,_lineBox.y2,_lineBox.x2,_lineBox.y2).attr({"data-id":context.actLayerId,class:"lineBottom", stroke: _color,strokeWidth: 1,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
+        let _lineLeft = context.Snap('#svgNoShow').paper.line(_lineBox.x,_lineBox.y,_lineBox.x,_lineBox.y2).attr({"data-id":context.actLayerId,class:"lineLeft",stroke: _color,strokeWidth: 1,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
 
         let _w = 5;
-        let _squareLT = context.Svg.paper.rect(_lineBox.x-_w,_lineBox.y-_w,_w,_w,0,0).attr({class:"squareLT",stroke: "#333",strokeWidth: 1,fill:"#333"});
-        let _squareCT = context.Svg.paper.rect(_lineBox.x+_lineBox.width/2-_w/2,_lineBox.y-_w,_w,_w,0,0).attr({class:"squareCT",stroke: "#333",strokeWidth: 1,fill:"#333"});
-        let _squareRT = context.Svg.paper.rect(_lineBox.x2,_lineBox.y-_w,_w,_w,0,0).attr({class:"squareRT",stroke: "#333",strokeWidth: 1,fill:"#333"});
-        let _squareCR = context.Svg.paper.rect(_lineBox.x2,_lineBox.y+_lineBox.height/2-_w/2,_w,_w,0,0).attr({class:"squareCR",stroke: "#333",strokeWidth: 1,fill:"#333"});
-        let _squareBR = context.Svg.paper.rect(_lineBox.x2,_lineBox.y2,_w,_w,0,0).attr({class:"squareBR",stroke: "#333",strokeWidth: 1,fill:"#333"});
-        let _squareBC = context.Svg.paper.rect(_lineBox.x+_lineBox.width/2-_w/2,_lineBox.y2,_w,_w,0,0).attr({class:"squareBC",stroke: "#333",strokeWidth: 1,fill:"#333"});
-        let _squareBL = context.Svg.paper.rect(_lineBox.x-_w,_lineBox.y2,_w,_w,0,0).attr({class:"squareBL",stroke: "#333",strokeWidth: 1,fill:"#333"});
-        let _squareCL = context.Svg.paper.rect(_lineBox.x-_w,_lineBox.y+_lineBox.height/2-_w/2,_w,_w,0,0).attr({class:"squareCL",stroke: "#333",strokeWidth: 1,fill:"#333"});
+        let _squareLT = context.Snap('#svgNoShow').paper.rect(_lineBox.x-_w,_lineBox.y-_w,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareLT",stroke: _color,strokeWidth: 1,fill:_color});
+        let _squareCT = context.Snap('#svgNoShow').paper.rect(_lineBox.x+_lineBox.width/2-_w/2,_lineBox.y-_w,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareCT",stroke: _color,strokeWidth: 1,fill:_color});
+        let _squareRT = context.Snap('#svgNoShow').paper.rect(_lineBox.x2,_lineBox.y-_w,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareRT",stroke: _color,strokeWidth: 1,fill:_color});
+        let _squareCR = context.Snap('#svgNoShow').paper.rect(_lineBox.x2,_lineBox.y+_lineBox.height/2-_w/2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareCR",stroke: _color,strokeWidth: 1,fill:_color});
+        let _squareBR = context.Snap('#svgNoShow').paper.rect(_lineBox.x2,_lineBox.y2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareBR",stroke: _color,strokeWidth: 1,fill:_color});
+        let _squareBC = context.Snap('#svgNoShow').paper.rect(_lineBox.x+_lineBox.width/2-_w/2,_lineBox.y2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareBC",stroke: _color,strokeWidth: 1,fill:_color});
+        let _squareBL = context.Snap('#svgNoShow').paper.rect(_lineBox.x-_w,_lineBox.y2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareBL",stroke: _color,strokeWidth: 1,fill:_color});
+        let _squareCL = context.Snap('#svgNoShow').paper.rect(_lineBox.x-_w,_lineBox.y+_lineBox.height/2-_w/2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareCL",stroke: _color,strokeWidth: 1,fill:_color});
 
-        let promise = new Promise((resolve,reject)=>{
-          let _gLineBox = context.Svg.paper.g(_lineTop,_lineRight,_lineBottom,_lineLeft,_squareLT,_squareCT,_squareRT,_squareCR,_squareBR,_squareBC,_squareBL,_squareCL).attr({id:`ant${context.actLayerId}`,class:"antBorder"});
+        let promise;
+        promise = new Promise((resolve,reject)=>{
+          let _gLineBox = context.Snap('#svgNoShow').paper.g(_lineTop,_lineRight,_lineBottom,_lineLeft,_squareLT,_squareCT,_squareRT,_squareCR,_squareBR,_squareBC,_squareBL,_squareCL).attr({id:`ant${context.actLayerId}`,class:"antBorder","data-id":context.actLayerId});
           resolve(_gLineBox);
-        })
+        })          
         promise.then((_box)=>{
             context.Svg.select(`#gid${context.actLayerId}`).append(_box);
+            this.commit("bindResize");
         })
       }
     }

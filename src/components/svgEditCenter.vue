@@ -1,6 +1,7 @@
 <template>
       <section class="center">
         <svg id="svg" class="svg" @mousedown="mousedown" :class="selType" width="80%" height="80%" style="background-color: white;" xmlns="http://www.w3.org/2000/svg" version="1.1"></svg>
+        <svg id="svgNoShow" xmlns="http://www.w3.org/2000/svg" style="display:none;" version="1.1"></svg>
         <div class="posiMsg" :style="{'left':dragPosition.x +'px','top':dragPosition.y + 'px'}" v-if="movePosition.show">
           <section class="part part1">
             <span class="posiType"><i :class="movePosition.isRight" class="iconfont icon-zhiding"></i>： </span>
@@ -59,7 +60,8 @@ export default {
   mounted(){
     Svg = this.Snap('#svg');
     this.$store.state.Svg = this.Snap("#svg");
-    this.$store.commit("focusSvgItem");
+    this.$store.state.Snap = this.Snap;
+    this.$store.commit("bindFocusEvent");
     this.$store.commit("bindDrag");
   },
   watch:{
@@ -151,15 +153,17 @@ export default {
                   strokeWidth: 5,
                   class:"svgItem",
                   id:'id'+ _storeState.actLayerId,
-                  'data-id':_storeState.actLayerId
+                  'data-id':_storeState.actLayerId,
+                  'data-type':"line"
               });
               Svg.paper.g(_line).attr({
                 fill:"none",
                   class:"gSvgItem",
-                  id:'gid'+_storeState.actLayerId
+                  id:'gid'+_storeState.actLayerId,
+                  "data-type":"line"
               })
-              this.$store.commit('addAnt');
-              this.$store.commit('focusSvgItem');
+              this.$store.commit('addAnt');//初次显示蚂蚁线.......
+              this.$store.commit('bindFocusEvent');//以后聚焦显示蚂蚁线......
             }else if(obj.event.type == "mousemove"){
               Svg.select(`#id${_storeState.actLayerId}`).attr({
                 x2:_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0],
@@ -167,7 +171,7 @@ export default {
               });
               this.$store.commit('addAnt');
             }
-          }          
+          }
           break;
         }
         case "icon-test3":{//钢笔工具.....
@@ -177,6 +181,33 @@ export default {
           break;
         }
         case "juxing1":{//矩形工具.....
+          if( _storeState.timer ){
+            if( obj.event.type == "mousedown" ){
+              this.$store.commit("addLayer");
+              let _rect = Svg.paper.rect( _storeState.coordinateOffsetDown[0],_storeState.coordinateOffsetDown[1],0,0 ).attr({
+                  stroke: "#000",
+                  strokeWidth: 5,
+                  class:"svgItem",
+                  id:'id'+ _storeState.actLayerId,
+                  'data-id':_storeState.actLayerId,
+                  "data-type":"rect"
+              });
+              Svg.paper.g(_rect).attr({
+                fill:"none",
+                  class:"gSvgItem",
+                  id:'gid'+_storeState.actLayerId,
+                  "data-type":"rect"
+              })
+              this.$store.commit('addAnt');//初次显示蚂蚁线.......
+              this.$store.commit('bindFocusEvent');//以后聚焦显示蚂蚁线......
+            }else if(obj.event.type == "mousemove"){
+              Svg.select(`#id${_storeState.actLayerId}`).attr({
+                width:_storeState.coordinateMove[0] - _storeState.coordinateDown[0],
+                height:_storeState.coordinateMove[1] - _storeState.coordinateDown[1]
+              });
+              this.$store.commit('addAnt');
+            }
+          }        
           break;
         }
         case "tuoyuanxing":{//椭圆工具.....
