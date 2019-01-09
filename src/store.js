@@ -23,7 +23,9 @@ export default new Vuex.Store({
       cy:"",
       e:"",
       state:""
-    }
+    },
+    _matrix:null,//变换矩阵....
+    fixedPoint:[],//变换时的定点坐标......
   },
   mutations: {
     bindFocusEvent(context){
@@ -93,7 +95,7 @@ export default new Vuex.Store({
             context.Svg.select(`.${target}`).attr({cursor:type,'data-type':target});
             let _id = null;
             let onend = (e)=>{
-              console.log(e);
+              this.commit("resizeEnd",{"e":e,"id":_id});
               e.stopPropagation();
             }
             let onmove = (x,y,cx,cy,e)=>{
@@ -101,8 +103,13 @@ export default new Vuex.Store({
               e.stopPropagation();
             }
             let onstart = (cx,cy,e)=>{
-              console.log(cx,cy,e);
               _id = e.srcElement.dataset.id;
+              let _ele = context.Svg.select(`#id${_id}`);
+              let _box = context.Snap.path.getBBox(_ele.realPath);
+              //定点坐标....
+              context.fixedPoint[0] = e.offsetX + _box.width;
+              context.fixedPoint[1] = e.offsetY + _box.height;
+              //获取焦点元素ID
               e.stopPropagation();
             }
             context.Svg.select(`.${target}`).drag(onmove,onstart,onend);
@@ -123,38 +130,61 @@ export default new Vuex.Store({
     },
     resize(context,obj){
       let _ele = context.Svg.select(`#id${obj.id}`);
-      let _changeSize = ()=>{
-        if( obj.type == "squareLT" ){
-          if( _ele.type == "line" ){
-            if( obj.e.altKey ){
-  
-            }else{
-              
-            }
-          }else if( _ele.type == "rect" ){
-  
+      let _box = context.Snap.path.getBBox(_ele.realPath);
+      
+      if( obj.type == "squareLT" ){
+        if( _ele.type == "line" ){
+          if( obj.e.altKey ){
+            
+          }else{
+            context.Svg.paper.circle(context.fixedPoint[0],context.fixedPoint[1],10);
+            context._matrix = new Snap.Matrix();
+            context._matrix.scale((_box.width-obj.x)/_box.width,(_box.height-obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
+            context.itemMoveMsg.x = obj.x;
+            context.itemMoveMsg.y = obj.y;
+            _ele.transform(context._matrix).attr({"vector-effect":"non-scaling-stroke"});
           }
-        }else if( obj.type == "squareCT" || obj.type == "lineTop" ){
-
-        }else if( obj.type == "squareRT" ){
-          
-        }else if( obj.type == "squareCR" || obj.type == "lineRight" ){
-
-        }else if( obj.type == "squareBR" ){
-
-        }else if( obj.type == "squareBC" || obj.type == "lineBottom" ){
-
-        }else if( obj.type == "squareBL"){
-
-        }else if( obj.type == "squareCL" || obj.type == "lineLeft" ){
-
+        }else if( _ele.type == "rect" ){
+  
         }
-      }
-      if( obj.e.altKey ){
+      }else if( obj.type == "squareCT" || obj.type == "lineTop" ){
 
-      }else{
+      }else if( obj.type == "squareRT" ){
+        
+      }else if( obj.type == "squareCR" || obj.type == "lineRight" ){
+
+      }else if( obj.type == "squareBR" ){
+
+      }else if( obj.type == "squareBC" || obj.type == "lineBottom" ){
+
+      }else if( obj.type == "squareBL"){
+
+      }else if( obj.type == "squareCL" || obj.type == "lineLeft" ){
 
       }
+      this.commit("addAnt")
+    },
+    resizeEnd(context,obj){
+      let _ele = context.Svg.select(`#id${obj.id}`);
+      let _box = context.Snap.path.getBBox(_ele.realPath);
+      context.Svg.paper.circle(_ele.attr('x1'),_ele.attr('y1'),5).attr({fill:'red'});
+      context.Svg.paper.circle(Number(_ele.attr('x1')) + context.itemMoveMsg.x,Number(_ele.attr('y1')) + context.itemMoveMsg.y,5).attr({fill:'blue'});
+      let promise = new Promise((resolve,reject)=>{
+        if( _ele.type == "line" ){
+          let _x1 = Number(_ele.attr('x1')) + context.itemMoveMsg.x;
+          let _y1 =  Number(_ele.attr('y1')) + context.itemMoveMsg.y;
+          let _m = new Snap.Matrix();
+          _ele.attr({x1:_x1, y1:_y1}).transform(_m);
+        }else if( _ele.type == "rect" ){
+  
+        }
+        resolve();
+      })
+      promise.then(()=>{
+        context.itemMoveMsg.x = 0;
+        context.itemMoveMsg.y = 0;
+        this.commit("addAnt");
+      })
     },
     addAnt(context){
       this.commit('removeAnt')
