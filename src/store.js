@@ -103,14 +103,11 @@ export default new Vuex.Store({
               e.stopPropagation();
             }
             let onstart = (cx,cy,e)=>{
-              _id = e.srcElement.dataset.id;
-              let _ele = context.Svg.select(`#id${_id}`);
-              let _box = context.Snap.path.getBBox(_ele.realPath);
-              //定点坐标....
-              context.fixedPoint[0] = e.offsetX + _box.width;
-              context.fixedPoint[1] = e.offsetY + _box.height;
-              //获取焦点元素ID
               e.stopPropagation();
+              //获取焦点元素ID
+              _id = e.srcElement.dataset.id;
+              //定点坐标....
+              this.commit("computeFixPoint",target);
             }
             context.Svg.select(`.${target}`).drag(onmove,onstart,onend);
           }
@@ -128,25 +125,23 @@ export default new Vuex.Store({
           context.Svg.select('.lineLeft') != null ? bind('lineLeft',"ew-resize") : null;
       }
     },
-    resize(context,obj){
+    resize(context,obj){//开始变换....
       let _ele = context.Svg.select(`#id${obj.id}`);
       let _box = context.Snap.path.getBBox(_ele.realPath);
-      
+      context.itemMoveMsg.x = obj.x;
+      context.itemMoveMsg.y = obj.y;
+      context._matrix = new Snap.Matrix();
       if( obj.type == "squareLT" ){
-        if( _ele.type == "line" ){
-          if( obj.e.altKey ){
-            
+          if( obj.e.altKey && !obj.e.shiftKey ){
+            context._matrix.scale((_box.width-obj.x)/_box.width,(_box.height-obj.y)/_box.height,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]-_box.height/2);
+          }else if( obj.e.shiftKey && !obj.e.altKey){
+            context._matrix.scale((_box.width-obj.x)/_box.width,(_box.width-obj.x)/_box.width,context.fixedPoint[0],context.fixedPoint[1]);
+          }else if( obj.e.altKey && obj.e.shiftKey ){
+            context._matrix.scale((_box.width-obj.x)/_box.width,(_box.width-obj.x)/_box.width,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]-_box.height/2);
           }else{
-            context.Svg.paper.circle(context.fixedPoint[0],context.fixedPoint[1],10);
-            context._matrix = new Snap.Matrix();
             context._matrix.scale((_box.width-obj.x)/_box.width,(_box.height-obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
-            context.itemMoveMsg.x = obj.x;
-            context.itemMoveMsg.y = obj.y;
-            _ele.transform(context._matrix).attr({"vector-effect":"non-scaling-stroke"});
           }
-        }else if( _ele.type == "rect" ){
-  
-        }
+          _ele.transform(context._matrix).attr({"vector-effect":"non-scaling-stroke"});
       }else if( obj.type == "squareCT" || obj.type == "lineTop" ){
 
       }else if( obj.type == "squareRT" ){
@@ -164,20 +159,13 @@ export default new Vuex.Store({
       }
       this.commit("addAnt")
     },
-    resizeEnd(context,obj){
+    resizeEnd(context,obj){//结束变换触发....
       let _ele = context.Svg.select(`#id${obj.id}`);
-      let _box = context.Snap.path.getBBox(_ele.realPath);
-      context.Svg.paper.circle(_ele.attr('x1'),_ele.attr('y1'),5).attr({fill:'red'});
-      context.Svg.paper.circle(Number(_ele.attr('x1')) + context.itemMoveMsg.x,Number(_ele.attr('y1')) + context.itemMoveMsg.y,5).attr({fill:'blue'});
       let promise = new Promise((resolve,reject)=>{
-        if( _ele.type == "line" ){
-          let _x1 = Number(_ele.attr('x1')) + context.itemMoveMsg.x;
-          let _y1 =  Number(_ele.attr('y1')) + context.itemMoveMsg.y;
-          let _m = new Snap.Matrix();
-          _ele.attr({x1:_x1, y1:_y1}).transform(_m);
-        }else if( _ele.type == "rect" ){
-  
-        }
+        let pathTransform = Snap.path.map(_ele.attr("d").toString(), context._matrix).toString();
+        let _m = new Snap.Matrix();
+        _ele.attr({d:pathTransform})
+        _ele.transform(_m);        
         resolve();
       })
       promise.then(()=>{
@@ -186,25 +174,63 @@ export default new Vuex.Store({
         this.commit("addAnt");
       })
     },
+    computeFixPoint(context,target){//计算固定点......
+      let _ele;
+      let _w = 5;//控制点的长......
+      if( target == "squareLT" ){
+        _ele = context.Svg.select(".squareBR");
+        context.fixedPoint[0] = Number(_ele.attr("x"));
+        context.fixedPoint[1] = Number(_ele.attr("y"));
+      }else if( target == "squareCT"){
+        _ele = context.Svg.select( `.${squareBC}`);
+        context.fixedPoint[0] = Number(_ele.attr("x")+_w/2);
+        context.fixedPoint[1] = Number(_ele.attr("y"));        
+      }else if( target == "squareRT" ){
+        _ele = context.Svg.select( `.${squareBL}`);
+        context.fixedPoint[0] = Number(_ele.attr("x")+_w);
+        context.fixedPoint[1] = Number(_ele.attr("y"));          
+      }else if( target == "squareCR" ){
+        _ele = context.Svg.select( `.${squareCL}`);
+        context.fixedPoint[0] = Number(_ele.attr("x")+_w);
+        context.fixedPoint[1] = Number(_ele.attr("y")+_w/2);          
+      }else if( target == "squareBR" ){
+        _ele = context.Svg.select( `.${squareLT}`);
+        context.fixedPoint[0] = Number(_ele.attr("x")+_w);
+        context.fixedPoint[1] = Number(_ele.attr("y")+_w);          
+      }else if( target == "squareBC" ){
+        _ele = context.Svg.select( `.${squareCT}`);
+        context.fixedPoint[0] = Number(_ele.attr("x")+_w/2);
+        context.fixedPoint[1] = Number(_ele.attr("y")+_w);          
+      }else if( target == "squareBL" ){
+        _ele = context.Svg.select( `.${squareRT}`);
+        context.fixedPoint[0] = Number(_ele.attr("x"));
+        context.fixedPoint[1] = Number(_ele.attr("y")+_w);          
+      }else if( target == "squareCL" ){
+        _ele = context.Svg.select( `.${squareCR}`);
+        context.fixedPoint[0] = Number(_ele.attr("x"));
+        context.fixedPoint[1] = Number(_ele.attr("y")+_w/2);          
+      }
+    },
     addAnt(context){
       this.commit('removeAnt')
       if(context.Svg.selectAll(`#ant${context.actLayerId}`).length == 0){
         let _lineBox = context.Svg.select(`#id${context.actLayerId}`).getBBox();
         let _color = "#00bf63";
-        let _lineTop = context.Snap('#svgNoShow').paper.line(_lineBox.x,_lineBox.y,_lineBox.x2,_lineBox.y).attr({"data-id":context.actLayerId,class:"lineTop",stroke: _color,strokeWidth: 1,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
-        let _lineRight = context.Snap('#svgNoShow').paper.line(_lineBox.x2,_lineBox.y,_lineBox.x2,_lineBox.y2).attr({"data-id":context.actLayerId,class:"lineRight",stroke: _color,strokeWidth: 1,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
-        let _lineBottom = context.Snap('#svgNoShow').paper.line(_lineBox.x,_lineBox.y2,_lineBox.x2,_lineBox.y2).attr({"data-id":context.actLayerId,class:"lineBottom", stroke: _color,strokeWidth: 1,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
-        let _lineLeft = context.Snap('#svgNoShow').paper.line(_lineBox.x,_lineBox.y,_lineBox.x,_lineBox.y2).attr({"data-id":context.actLayerId,class:"lineLeft",stroke: _color,strokeWidth: 1,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
+        let _wStroke = 1;
+        let _lineTop = context.Snap('#svgNoShow').paper.line(_lineBox.x,_lineBox.y,_lineBox.x2,_lineBox.y).attr({"data-id":context.actLayerId,class:"lineTop",stroke: _color,strokeWidth:_wStroke,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
+        let _lineRight = context.Snap('#svgNoShow').paper.line(_lineBox.x2,_lineBox.y,_lineBox.x2,_lineBox.y2).attr({"data-id":context.actLayerId,class:"lineRight",stroke: _color,strokeWidth:_wStroke,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
+        let _lineBottom = context.Snap('#svgNoShow').paper.line(_lineBox.x,_lineBox.y2,_lineBox.x2,_lineBox.y2).attr({"data-id":context.actLayerId,class:"lineBottom", stroke: _color,strokeWidth:_wStroke,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
+        let _lineLeft = context.Snap('#svgNoShow').paper.line(_lineBox.x,_lineBox.y,_lineBox.x,_lineBox.y2).attr({"data-id":context.actLayerId,class:"lineLeft",stroke: _color,strokeWidth:_wStroke,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
 
         let _w = 5;
-        let _squareLT = context.Snap('#svgNoShow').paper.rect(_lineBox.x-_w,_lineBox.y-_w,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareLT",stroke: _color,strokeWidth: 1,fill:_color});
-        let _squareCT = context.Snap('#svgNoShow').paper.rect(_lineBox.x+_lineBox.width/2-_w/2,_lineBox.y-_w,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareCT",stroke: _color,strokeWidth: 1,fill:_color});
-        let _squareRT = context.Snap('#svgNoShow').paper.rect(_lineBox.x2,_lineBox.y-_w,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareRT",stroke: _color,strokeWidth: 1,fill:_color});
-        let _squareCR = context.Snap('#svgNoShow').paper.rect(_lineBox.x2,_lineBox.y+_lineBox.height/2-_w/2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareCR",stroke: _color,strokeWidth: 1,fill:_color});
-        let _squareBR = context.Snap('#svgNoShow').paper.rect(_lineBox.x2,_lineBox.y2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareBR",stroke: _color,strokeWidth: 1,fill:_color});
-        let _squareBC = context.Snap('#svgNoShow').paper.rect(_lineBox.x+_lineBox.width/2-_w/2,_lineBox.y2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareBC",stroke: _color,strokeWidth: 1,fill:_color});
-        let _squareBL = context.Snap('#svgNoShow').paper.rect(_lineBox.x-_w,_lineBox.y2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareBL",stroke: _color,strokeWidth: 1,fill:_color});
-        let _squareCL = context.Snap('#svgNoShow').paper.rect(_lineBox.x-_w,_lineBox.y+_lineBox.height/2-_w/2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareCL",stroke: _color,strokeWidth: 1,fill:_color});
+        let _squareLT = context.Snap('#svgNoShow').paper.rect(_lineBox.x-_w,_lineBox.y-_w,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareLT",stroke: _color,strokeWidth:_wStroke,fill:_color});
+        let _squareCT = context.Snap('#svgNoShow').paper.rect(_lineBox.x+_lineBox.width/2-_w/2,_lineBox.y-_w,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareCT",stroke: _color,strokeWidth:_wStroke,fill:_color});
+        let _squareRT = context.Snap('#svgNoShow').paper.rect(_lineBox.x2,_lineBox.y-_w,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareRT",stroke: _color,strokeWidth:_wStroke,fill:_color});
+        let _squareCR = context.Snap('#svgNoShow').paper.rect(_lineBox.x2,_lineBox.y+_lineBox.height/2-_w/2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareCR",stroke: _color,strokeWidth:_wStroke,fill:_color});
+        let _squareBR = context.Snap('#svgNoShow').paper.rect(_lineBox.x2,_lineBox.y2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareBR",stroke: _color,strokeWidth:_wStroke,fill:_color});
+        let _squareBC = context.Snap('#svgNoShow').paper.rect(_lineBox.x+_lineBox.width/2-_w/2,_lineBox.y2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareBC",stroke: _color,strokeWidth:_wStroke,fill:_color});
+        let _squareBL = context.Snap('#svgNoShow').paper.rect(_lineBox.x-_w,_lineBox.y2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareBL",stroke: _color,strokeWidth:_wStroke,fill:_color});
+        let _squareCL = context.Snap('#svgNoShow').paper.rect(_lineBox.x-_w,_lineBox.y+_lineBox.height/2-_w/2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareCL",stroke: _color,strokeWidth:_wStroke,fill:_color});
 
         let promise;
         promise = new Promise((resolve,reject)=>{

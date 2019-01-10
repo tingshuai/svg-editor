@@ -2,7 +2,7 @@
   <section class="container" @mouseleave.stop="mouseleave" @mouseup="mouseUp" @mousemove="mousemove">
     <top></top>
     <div class="bottom">
-      <left ref="left" @selTool="selTool"></left>
+      <left ref="left" @selTool="selTool" :keys="keys"></left>
       <center ref="center" :coordinateMove="coordinateMove" :sel-type="selType"></center>
       <right></right>
     </div>
@@ -29,6 +29,12 @@ export default {
       coordinateMove:[],
       ops:{
         
+      },
+      keys:{
+        alt:false,
+        ctrl:false,
+        shift:false,
+        space:false
       }
     }
   },
@@ -40,7 +46,7 @@ export default {
     let _this = this;
     document.addEventListener('contextmenu', (e)=> {
       e.preventDefault();
-    })
+    })      
   },
   computed:{
 

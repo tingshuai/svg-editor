@@ -148,7 +148,7 @@ export default {
           if( _storeState.timer ){
             if( obj.event.type == "mousedown" ){
               this.$store.commit("addLayer");
-              let _line = Svg.paper.line( _storeState.coordinateOffsetDown[0]-5,_storeState.coordinateOffsetDown[1]-5,_storeState.coordinateOffsetDown[0],_storeState.coordinateOffsetDown[1] ).attr({
+              let _line = Svg.paper.path(`M${_storeState.coordinateOffsetDown[0]-5} ${_storeState.coordinateOffsetDown[1]-5}L${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}`).attr({
                   stroke: "#000",
                   strokeWidth: 5,
                   class:"svgItem",
@@ -166,8 +166,7 @@ export default {
               this.$store.commit('bindFocusEvent');//以后聚焦显示蚂蚁线......
             }else if(obj.event.type == "mousemove"){
               Svg.select(`#id${_storeState.actLayerId}`).attr({
-                x2:_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0],
-                y2:_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]
+                d:`M${_storeState.coordinateOffsetDown[0]-5} ${_storeState.coordinateOffsetDown[1]-5}L${_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0]} ${_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]}`
               });
               this.$store.commit('addAnt');
             }

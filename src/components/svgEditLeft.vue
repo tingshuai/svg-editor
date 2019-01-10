@@ -18,8 +18,12 @@
 export default {
   components: {
   },  
+  props:{
+
+  },
   data () {
     return {
+      keyboards:this.keys,
       barList:[
           {
               icon:"xuanze",
@@ -129,10 +133,43 @@ export default {
 
   },
   mounted(){
+    document.addEventListener('keyup', (e)=> {
 
+        console.log(e.keyCode);
+        
+        if( e.keyCode == 65 ){//A 选择
+
+        }else if( e.keyCode == 84 ){//T 文字
+
+        }else if( e.keyCode == 76 ){//L 线
+
+        }else if( e.keyCode == 80 ){//P 钢笔
+
+        }else if( e.keyCode == 77 ){//M 矩形
+
+        }else if( e.keyCode == 66 ){//B 铅笔
+
+        }else if( e.keyCode == 79 ){//O 椭圆工具.
+
+        }else if( e.keyCode == 69 ){//E 橡皮擦
+
+        }else if( e.keyCode == 67 ){//C 色板.....
+
+        }
+    //   if( e.keyCode == "17" ){//ctrl
+       
+    //   }else if( e.keyCode == 16 ){//shift.
+    //     e.type == "keyup" ? this.keys.shift = false :  this.keys.shift = true ;
+    //   }else if( e.keyCode == 18 ){//alt
+    //     e.type == "keyup" ? this.keys.alt = false :  this.keys.alt = true ;
+    //   }else if( e.keyCode == 32 ){//space
+    //     e.type == "keyup" ? this.keys.space = false :  this.keys.space = true ;
+    //   }
+      e.preventDefault();
+    })          
   },
   watch:{
-
+ 
   },
   methods:{
       hid(){
