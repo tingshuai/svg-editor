@@ -19,17 +19,16 @@ export default {
   components: {
   },  
   props:{
-
-  },
+      },
   data () {
     return {
-      keyboards:this.keys,
       barList:[
           {
               icon:"xuanze",
               title:"移动工具 A",
               children:[],
               act:true,
+              keyCode:65,
               showChild:false
           },
           {
@@ -37,6 +36,7 @@ export default {
               title:"文字工具 T",
               showChild:false,
               act:false,
+              keyCode:84,
               children:[]
           },
           {
@@ -44,6 +44,7 @@ export default {
               title:"线性工具 L",
               showChild:false,
               act:false,
+              keyCode:76,
               children:[
                   {
                       icon:"xiantiao",
@@ -76,6 +77,7 @@ export default {
               title:"钢笔工具 P",
               showChild:false,
               act:false,
+              keyCode:80,
               children:[]
           },  
           {
@@ -83,12 +85,14 @@ export default {
               title:"画笔工具 B",
               showChild:false,
               act:false,
+              keyCode:66,
               children:[]
           },   
           {
               icon:"juxing1",
               title:"矩形工具 M",
               showChild:false,
+              keyCode:77,
               act:false,
               children:[
                   {
@@ -110,6 +114,7 @@ export default {
               title:"椭圆工具 O",
               showChild:false,
               act:false,
+              keyCode:79,
               children:[]
           },  
           {
@@ -117,11 +122,13 @@ export default {
               title:"橡皮擦 E",
               showChild:false,
               act:false,
+              keyCode:69,
               children:[]
           },    
           {
               icon:"yanse1",
               title:"色板 C",
+              keyCode:67,
               showChild:false,
               act:false,
               children:[]
@@ -134,44 +141,35 @@ export default {
   },
   mounted(){
     document.addEventListener('keyup', (e)=> {
-
-        console.log(e.keyCode);
-        
-        if( e.keyCode == 65 ){//A 选择
-
-        }else if( e.keyCode == 84 ){//T 文字
-
-        }else if( e.keyCode == 76 ){//L 线
-
-        }else if( e.keyCode == 80 ){//P 钢笔
-
-        }else if( e.keyCode == 77 ){//M 矩形
-
-        }else if( e.keyCode == 66 ){//B 铅笔
-
-        }else if( e.keyCode == 79 ){//O 椭圆工具.
-
-        }else if( e.keyCode == 69 ){//E 橡皮擦
-
-        }else if( e.keyCode == 67 ){//C 色板.....
-
+        if( e.keyCode == 65 || e.keyCode == 84 || e.keyCode == 76 || e.keyCode == 80 || e.keyCode ==77 || e.keyCode == 66 || e.keyCode == 79 || e.keyCode == 69 || e.keyCode == 67){
+            this.toggleMe(e.keyCode)
         }
-    //   if( e.keyCode == "17" ){//ctrl
-       
-    //   }else if( e.keyCode == 16 ){//shift.
-    //     e.type == "keyup" ? this.keys.shift = false :  this.keys.shift = true ;
-    //   }else if( e.keyCode == 18 ){//alt
-    //     e.type == "keyup" ? this.keys.alt = false :  this.keys.alt = true ;
-    //   }else if( e.keyCode == 32 ){//space
-    //     e.type == "keyup" ? this.keys.space = false :  this.keys.space = true ;
-    //   }
-      e.preventDefault();
-    })          
+        e.preventDefault();
+    })
   },
   watch:{
  
   },
   methods:{
+      toggleMe(code){
+          let _dataSet = {currentTarget:{dataset:{}}};
+          let _i = this.barList.findIndex((item)=>{
+            return item.keyCode == code
+          })
+          let _ii;
+          if(this.barList[_i].children.length == 0){
+            _dataSet.currentTarget.dataset.index = _i;
+            _dataSet.currentTarget.dataset.parentindex = null;
+            this.actMe(_dataSet);
+          }else{
+            _ii = this.barList[_i].children.findIndex((it)=>{
+                return it.icon = this.barList[_i].icon;
+            })
+            _dataSet.currentTarget.dataset.index = _ii;
+            _dataSet.currentTarget.dataset.parentindex = _i;
+            this.actChild(_dataSet);
+          }
+      },
       hid(){
           this.barList.forEach((item,i,arr) => {
               item.showChild = false;
@@ -179,21 +177,27 @@ export default {
       },
       actMe(e){
           let _dataSet = e.currentTarget.dataset;
+          let that = this;
           this.barList.forEach((item,i,arr) => {
-              item.act = false;
+            item.act = false;
           });
           this.barList[ _dataSet.index ].act = true;
           this.$emit( "selTool", this.barList[ _dataSet.index ].icon );
       },
       actChild(e){
           let _dataSet = e.currentTarget.dataset;
-          this.barList[ _dataSet.parentindex ].children.forEach((item,i,arr)=>{
-              item.act = false;
+          this.barList.forEach((it,i,arr)=>{
+              it.act = false;
           })
+          this.barList[ _dataSet.parentindex ].children.forEach((item,i,arr)=>{
+                item.act = false;
+          })
+          this.barList[ _dataSet.parentindex ].act = true;
           this.barList[ _dataSet.parentindex ].children[ _dataSet.index ].act = true;
           this.barList[ _dataSet.parentindex ].icon = this.barList[ _dataSet.parentindex ].children[ _dataSet.index ].icon;
           this.barList[ _dataSet.parentindex ].showChild = false;
           this.$emit( "selTool", this.barList[ _dataSet.parentindex ].icon );
+          console.log(this.barList);
       },
       contextmenu(e) {
         let _dataSet = e.currentTarget.dataset;

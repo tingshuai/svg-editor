@@ -44,6 +44,8 @@ export default new Vuex.Store({
         ele.drag();
         let onend = (e)=>{
           context.itemMoveMsg.state = "end"
+          // that.commit("addAnt");
+          // that.commit("bindResize");
         }
         let onmove = (x,y,cx,cy,e)=>{
           context.itemMoveMsg.x = x;
@@ -52,8 +54,6 @@ export default new Vuex.Store({
           context.itemMoveMsg.cy = cy;
           context.itemMoveMsg.e = e;
           context.itemMoveMsg.state = "move"
-          that.commit("addAnt");
-          that.commit("bindResize");
         }
         let onstart = (cx,cy,e)=>{
           context.itemMoveMsg.cx = cx;
@@ -212,9 +212,11 @@ export default new Vuex.Store({
       }
     },
     addAnt(context){
-      this.commit('removeAnt')
+      this.commit('removeAnt');
       if(context.Svg.selectAll(`#ant${context.actLayerId}`).length == 0){
         let _lineBox = context.Svg.select(`#id${context.actLayerId}`).getBBox();
+        console.log(_lineBox.width);
+        
         let _color = "#00bf63";
         let _wStroke = 1;
         let _lineTop = context.Snap('#svgNoShow').paper.line(_lineBox.x,_lineBox.y,_lineBox.x2,_lineBox.y).attr({"data-id":context.actLayerId,class:"lineTop",stroke: _color,strokeWidth:_wStroke,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
