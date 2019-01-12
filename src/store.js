@@ -1,9 +1,12 @@
 import Vue from "vue";
 import Vuex from "vuex";
-
+import draw from './modules/draw.js'
 Vue.use(Vuex);
 
 export default new Vuex.Store({
+  modules: {
+    draw
+  },  
   state: {
     Snap:null,
     Svg:null,
@@ -26,9 +29,13 @@ export default new Vuex.Store({
     },
     _matrix:null,//变换矩阵....
     fixedPoint:[],//变换时的定点坐标......
+    showAnt:false,//是否显示蚂蚁线.....
   },
   mutations: {
     bindFocusEvent(context){
+      if(context.actLayerId != null){//判断是否有焦点....
+        this.commit("addAnt");//聚焦时应该重绘蚂蚁线.......
+      }
       context.Svg.selectAll('.svgItem').forEach((val,i,arr)=>{
         val.unclick();
         val.mousedown((e)=>{
@@ -44,8 +51,6 @@ export default new Vuex.Store({
         ele.drag();
         let onend = (e)=>{
           context.itemMoveMsg.state = "end"
-          // that.commit("addAnt");
-          // that.commit("bindResize");
         }
         let onmove = (x,y,cx,cy,e)=>{
           context.itemMoveMsg.x = x;
@@ -78,58 +83,39 @@ export default new Vuex.Store({
         id:context.actLayerId
       })
     },
-    removeAnt(context){
-      context.Svg.selectAll('.antBorder').forEach((val,i,arr)=>{
-        val.remove();
-      })
-      context.Snap('#svgNoShow').selectAll('line').forEach((val,i,arr)=>{
-        val.remove();
-      })  
-      context.Snap('#svgNoShow').selectAll('rect').forEach((val,i,arr)=>{
-        val.remove();
-      })             
-    },
     bindResize(context){
-      if(context.Svg.selectAll(`#ant${context.actLayerId}`).length != 0){
-          let bind = (target,type)=>{
-            context.Svg.select(`.${target}`).attr({cursor:type,'data-type':target});
+          let bind = (type)=>{
             let _id = null;
             let onend = (e)=>{
               this.commit("resizeEnd",{"e":e,"id":_id});
               e.stopPropagation();
             }
             let onmove = (x,y,cx,cy,e)=>{
-              this.commit("resize",{"x":x,"y":y,"cx":cx,"cy":cy,"e":e,"type":target,"dragger":type,id:_id});
+              this.commit("resize",{"x":x,"y":y,"cx":cx,"cy":cy,"e":e,"type":type,id:_id});
               e.stopPropagation();
             }
             let onstart = (cx,cy,e)=>{
               e.stopPropagation();
               //获取焦点元素ID
-              _id = e.srcElement.dataset.id;
+              let _dataset = e.srcElement.dataset;
+              _id = _dataset.id;
               //定点坐标....
-              this.commit("computeFixPoint",target);
+              context.fixedPoint[0] = Number(_dataset["fixedpoint_x"]);
+              context.fixedPoint[1] = Number(_dataset["fixedpoint_y"]);              
             }
-            context.Svg.select(`.${target}`).drag(onmove,onstart,onend);
+            context.Svg.select(`#${type}`).drag( onmove,onstart,onend );
           }
-          context.Svg.select('.squareLT') != null ? bind('squareLT',"nw-resize") : null;
-          context.Svg.select('.squareCT') != null ? bind('squareCT',"ns-resize") : null;
-          context.Svg.select('.squareRT') != null ? bind('squareRT',"ne-resize") : null;
-          context.Svg.select('.squareCR') != null ? bind('squareCR',"ew-resize") : null;
-          context.Svg.select('.squareBR') != null ? bind('squareBR',"nw-resize") : null;
-          context.Svg.select('.squareBC') != null ? bind('squareBC',"ns-resize") : null;
-          context.Svg.select('.squareBL') != null ? bind('squareBL',"ne-resize") : null;
-          context.Svg.select('.squareCL') != null ? bind('squareCL',"ew-resize") : null;
-          context.Svg.select('.lineTop') != null ? bind('lineTop',"ns-resize") : null;
-          context.Svg.select('.lineRight') != null ? bind('lineRight',"ew-resize") : null;
-          context.Svg.select('.lineBottom') != null ? bind('lineBottom',"ns-resize") : null;
-          context.Svg.select('.lineLeft') != null ? bind('lineLeft',"ew-resize") : null;
-      }
+          context.Svg.selectAll("._controlBar").forEach((ele)=>{
+            let _type = ele.attr('data-type');
+            bind(_type)
+          })
     },
     resize(context,obj){//开始变换....
       let _ele = context.Svg.select(`#id${obj.id}`);
       let _box = context.Snap.path.getBBox(_ele.realPath);
       context.itemMoveMsg.x = obj.x;
       context.itemMoveMsg.y = obj.y;
+      
       context._matrix = new Snap.Matrix();
       if( obj.type == "squareLT" ){
           if( obj.e.altKey && !obj.e.shiftKey ){
@@ -160,90 +146,41 @@ export default new Vuex.Store({
       this.commit("addAnt")
     },
     resizeEnd(context,obj){//结束变换触发....
-      let _ele = context.Svg.select(`#id${obj.id}`);
-      let promise = new Promise((resolve,reject)=>{
+        let _ele = context.Svg.select(`#id${obj.id}`);
         let pathTransform = Snap.path.map(_ele.attr("d").toString(), context._matrix).toString();
         let _m = new Snap.Matrix();
         _ele.attr({d:pathTransform})
         _ele.transform(_m);        
-        resolve();
-      })
-      promise.then(()=>{
         context.itemMoveMsg.x = 0;
         context.itemMoveMsg.y = 0;
-        this.commit("addAnt");
-      })
     },
-    computeFixPoint(context,target){//计算固定点......
-      let _ele;
-      let _w = 5;//控制点的长......
-      if( target == "squareLT" ){
-        _ele = context.Svg.select(".squareBR");
-        context.fixedPoint[0] = Number(_ele.attr("x"));
-        context.fixedPoint[1] = Number(_ele.attr("y"));
-      }else if( target == "squareCT"){
-        _ele = context.Svg.select( `.${squareBC}`);
-        context.fixedPoint[0] = Number(_ele.attr("x")+_w/2);
-        context.fixedPoint[1] = Number(_ele.attr("y"));        
-      }else if( target == "squareRT" ){
-        _ele = context.Svg.select( `.${squareBL}`);
-        context.fixedPoint[0] = Number(_ele.attr("x")+_w);
-        context.fixedPoint[1] = Number(_ele.attr("y"));          
-      }else if( target == "squareCR" ){
-        _ele = context.Svg.select( `.${squareCL}`);
-        context.fixedPoint[0] = Number(_ele.attr("x")+_w);
-        context.fixedPoint[1] = Number(_ele.attr("y")+_w/2);          
-      }else if( target == "squareBR" ){
-        _ele = context.Svg.select( `.${squareLT}`);
-        context.fixedPoint[0] = Number(_ele.attr("x")+_w);
-        context.fixedPoint[1] = Number(_ele.attr("y")+_w);          
-      }else if( target == "squareBC" ){
-        _ele = context.Svg.select( `.${squareCT}`);
-        context.fixedPoint[0] = Number(_ele.attr("x")+_w/2);
-        context.fixedPoint[1] = Number(_ele.attr("y")+_w);          
-      }else if( target == "squareBL" ){
-        _ele = context.Svg.select( `.${squareRT}`);
-        context.fixedPoint[0] = Number(_ele.attr("x"));
-        context.fixedPoint[1] = Number(_ele.attr("y")+_w);          
-      }else if( target == "squareCL" ){
-        _ele = context.Svg.select( `.${squareCR}`);
-        context.fixedPoint[0] = Number(_ele.attr("x"));
-        context.fixedPoint[1] = Number(_ele.attr("y")+_w/2);          
-      }
-    },
-    addAnt(context){
-      this.commit('removeAnt');
-      if(context.Svg.selectAll(`#ant${context.actLayerId}`).length == 0){
+    addAnt(context){//重绘控制点.....
         let _lineBox = context.Svg.select(`#id${context.actLayerId}`).getBBox();
-        console.log(_lineBox.width);
-        
         let _color = "#00bf63";
         let _wStroke = 1;
-        let _lineTop = context.Snap('#svgNoShow').paper.line(_lineBox.x,_lineBox.y,_lineBox.x2,_lineBox.y).attr({"data-id":context.actLayerId,class:"lineTop",stroke: _color,strokeWidth:_wStroke,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
-        let _lineRight = context.Snap('#svgNoShow').paper.line(_lineBox.x2,_lineBox.y,_lineBox.x2,_lineBox.y2).attr({"data-id":context.actLayerId,class:"lineRight",stroke: _color,strokeWidth:_wStroke,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
-        let _lineBottom = context.Snap('#svgNoShow').paper.line(_lineBox.x,_lineBox.y2,_lineBox.x2,_lineBox.y2).attr({"data-id":context.actLayerId,class:"lineBottom", stroke: _color,strokeWidth:_wStroke,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
-        let _lineLeft = context.Snap('#svgNoShow').paper.line(_lineBox.x,_lineBox.y,_lineBox.x,_lineBox.y2).attr({"data-id":context.actLayerId,class:"lineLeft",stroke: _color,strokeWidth:_wStroke,fill:"none",strokeDasharray:"2 2",strokeDashoffset:0});
+        let isOne = context.actLayerId == context.Svg.select('#gAntBorder').attr("data-id") ? true : false;//判断是否是同一个图层.....
+        context.Svg.select("#gAntBorder").attr({'data-id':context.actLayerId});
 
+        context.Svg.select("#lineTop").attr({x1:_lineBox.x,y1:_lineBox.y,x2:_lineBox.x2,y2:_lineBox.y,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y2});
+        context.Svg.select("#lineRight").attr({x1:_lineBox.x2,y1:_lineBox.y,x2:_lineBox.x2,y2:_lineBox.y2,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
+        context.Svg.select("#lineBottom").attr({x1:_lineBox.x,y1:_lineBox.y2,x2:_lineBox.x2,y2:_lineBox.y2,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y});
+        context.Svg.select("#lineLeft").attr({x1:_lineBox.x,y1:_lineBox.y,x2:_lineBox.x,y2:_lineBox.y2,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
+        
         let _w = 5;
-        let _squareLT = context.Snap('#svgNoShow').paper.rect(_lineBox.x-_w,_lineBox.y-_w,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareLT",stroke: _color,strokeWidth:_wStroke,fill:_color});
-        let _squareCT = context.Snap('#svgNoShow').paper.rect(_lineBox.x+_lineBox.width/2-_w/2,_lineBox.y-_w,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareCT",stroke: _color,strokeWidth:_wStroke,fill:_color});
-        let _squareRT = context.Snap('#svgNoShow').paper.rect(_lineBox.x2,_lineBox.y-_w,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareRT",stroke: _color,strokeWidth:_wStroke,fill:_color});
-        let _squareCR = context.Snap('#svgNoShow').paper.rect(_lineBox.x2,_lineBox.y+_lineBox.height/2-_w/2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareCR",stroke: _color,strokeWidth:_wStroke,fill:_color});
-        let _squareBR = context.Snap('#svgNoShow').paper.rect(_lineBox.x2,_lineBox.y2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareBR",stroke: _color,strokeWidth:_wStroke,fill:_color});
-        let _squareBC = context.Snap('#svgNoShow').paper.rect(_lineBox.x+_lineBox.width/2-_w/2,_lineBox.y2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareBC",stroke: _color,strokeWidth:_wStroke,fill:_color});
-        let _squareBL = context.Snap('#svgNoShow').paper.rect(_lineBox.x-_w,_lineBox.y2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareBL",stroke: _color,strokeWidth:_wStroke,fill:_color});
-        let _squareCL = context.Snap('#svgNoShow').paper.rect(_lineBox.x-_w,_lineBox.y+_lineBox.height/2-_w/2,_w,_w,0,0).attr({"data-id":context.actLayerId,class:"squareCL",stroke: _color,strokeWidth:_wStroke,fill:_color});
+        context.Svg.select("#squareLT").attr({x:_lineBox.x-_w,y:_lineBox.y-_w,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y2});
+        context.Svg.select("#squareCT").attr({x:_lineBox.x+_lineBox.width/2-_w/2,y:_lineBox.y-_w,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y2});
+        context.Svg.select("#squareRT").attr({x:_lineBox.x2,y:_lineBox.y-_w,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y2});
+        context.Svg.select("#squareCR").attr({x:_lineBox.x2,y:_lineBox.y+_lineBox.height/2-_w/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
+        context.Svg.select("#squareBR").attr({x:_lineBox.x2,y:_lineBox.y2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y});
+        context.Svg.select("#squareBC").attr({x:_lineBox.x+_lineBox.width/2-_w/2,y:_lineBox.y2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y});
+        context.Svg.select("#squareBL").attr({x:_lineBox.x-_w,y:_lineBox.y2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y});
+        context.Svg.select("#squareCL").attr({x:_lineBox.x-_w,y:_lineBox.y+_lineBox.height/2-_w/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
 
-        let promise;
-        promise = new Promise((resolve,reject)=>{
-          let _gLineBox = context.Snap('#svgNoShow').paper.g(_lineTop,_lineRight,_lineBottom,_lineLeft,_squareLT,_squareCT,_squareRT,_squareCR,_squareBR,_squareBC,_squareBL,_squareCL).attr({id:`ant${context.actLayerId}`,class:"antBorder","data-id":context.actLayerId});
-          resolve(_gLineBox);
-        })          
-        promise.then((_box)=>{
-            context.Svg.select(`#gid${context.actLayerId}`).append(_box);
-            this.commit("bindResize");
-        })
-      }
+        let _use = context.Svg.select('#_antBorder');
+        if( !isOne ){//如果不是同一个图层则添加.....
+          context.Svg.select(`#gid${context.actLayerId}`).append(_use);
+        }
+        context.showAnt ? null : context.showAnt = true;
     }
   },
   actions: {

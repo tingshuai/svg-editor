@@ -197,7 +197,6 @@ export default {
           this.barList[ _dataSet.parentindex ].icon = this.barList[ _dataSet.parentindex ].children[ _dataSet.index ].icon;
           this.barList[ _dataSet.parentindex ].showChild = false;
           this.$emit( "selTool", this.barList[ _dataSet.parentindex ].icon );
-          console.log(this.barList);
       },
       contextmenu(e) {
         let _dataSet = e.currentTarget.dataset;
@@ -229,6 +228,7 @@ export default {
           border-radius: 3px;
           margin: 1.5px 1px;    
           position: relative;
+          cursor: default;
           &.item{
               >.iconfont{
                 font-size: 22px;
