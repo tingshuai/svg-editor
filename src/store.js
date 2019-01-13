@@ -11,14 +11,14 @@ export default new Vuex.Store({
     Snap:null,
     Svg:null,
     coordinateDown:[],//鼠标按下的坐标.....
-    coordinateUp:[],//鼠标抬起的坐标.....   
+    coordinateUp:null,//鼠标抬起的坐标.....   
     coordinateOffsetDown:[],//鼠标相对于svg的偏移.....
+    coordinateSvgMove:[],//鼠标在svg上的移动距离......
     coordinateMove:[],//鼠标移动.....
     actLayerId:null,//当前活动层.....
     drawType:"xuanze",//画笔类型.....
     layer:[],//图层....
     timer:null,//是否结束绘制....
-    mouseevent:0,//0无事件,1左键按下，2右键按下....
     itemMoveMsg:{
       x:"",
       y:"",
@@ -26,6 +26,13 @@ export default new Vuex.Store({
       cy:"",
       e:"",
       state:""
+    },
+    publicAttr:{
+      "fill":"none",
+      "stroke":"black",
+      "strokeWidth":5,
+      "strokeDasharray":0,
+      "strokeDashoffset":0
     },
     _matrix:null,//变换矩阵....
     fixedPoint:[],//变换时的定点坐标......
@@ -87,12 +94,12 @@ export default new Vuex.Store({
           let bind = (type)=>{
             let _id = null;
             let onend = (e)=>{
-              this.commit("resizeEnd",{"e":e,"id":_id});
               e.stopPropagation();
+              this.commit("resizeEnd",{"e":e,"id":_id});
             }
             let onmove = (x,y,cx,cy,e)=>{
-              this.commit("resize",{"x":x,"y":y,"cx":cx,"cy":cy,"e":e,"type":type,id:_id});
               e.stopPropagation();
+              this.commit("resize",{"x":x,"y":y,"cx":cx,"cy":cy,"e":e,"type":type,id:_id});
             }
             let onstart = (cx,cy,e)=>{
               e.stopPropagation();
@@ -127,7 +134,6 @@ export default new Vuex.Store({
           }else{
             context._matrix.scale((_box.width-obj.x)/_box.width,(_box.height-obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
           }
-          _ele.transform(context._matrix).attr({"vector-effect":"non-scaling-stroke"});
       }else if( obj.type == "squareCT" || obj.type == "lineTop" ){
 
       }else if( obj.type == "squareRT" ){
@@ -143,11 +149,12 @@ export default new Vuex.Store({
       }else if( obj.type == "squareCL" || obj.type == "lineLeft" ){
 
       }
+      _ele.transform(context._matrix).attr({"vector-effect":"non-scaling-stroke"});
       this.commit("addAnt")
     },
     resizeEnd(context,obj){//结束变换触发....
         let _ele = context.Svg.select(`#id${obj.id}`);
-        let pathTransform = Snap.path.map(_ele.attr("d").toString(), context._matrix).toString();
+        let pathTransform = Snap.path.map(_ele.attr("d").toString(), context._matrix).toString() + "Z";
         let _m = new Snap.Matrix();
         _ele.attr({d:pathTransform})
         _ele.transform(_m);        
@@ -156,25 +163,24 @@ export default new Vuex.Store({
     },
     addAnt(context){//重绘控制点.....
         let _lineBox = context.Svg.select(`#id${context.actLayerId}`).getBBox();
-        let _color = "#00bf63";
-        let _wStroke = 1;
+        let _strockWidth = Number( context.Svg.select(`#id${context.actLayerId}`).attr("stroke-width").replace('px',''));
         let isOne = context.actLayerId == context.Svg.select('#gAntBorder').attr("data-id") ? true : false;//判断是否是同一个图层.....
         context.Svg.select("#gAntBorder").attr({'data-id':context.actLayerId});
-
-        context.Svg.select("#lineTop").attr({x1:_lineBox.x,y1:_lineBox.y,x2:_lineBox.x2,y2:_lineBox.y,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y2});
-        context.Svg.select("#lineRight").attr({x1:_lineBox.x2,y1:_lineBox.y,x2:_lineBox.x2,y2:_lineBox.y2,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
-        context.Svg.select("#lineBottom").attr({x1:_lineBox.x,y1:_lineBox.y2,x2:_lineBox.x2,y2:_lineBox.y2,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y});
-        context.Svg.select("#lineLeft").attr({x1:_lineBox.x,y1:_lineBox.y,x2:_lineBox.x,y2:_lineBox.y2,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
+        
+        context.Svg.select("#lineTop").attr({x1:_lineBox.x-_strockWidth/2,y1:_lineBox.y-_strockWidth/2,x2:_lineBox.x2+_strockWidth/2,y2:_lineBox.y-_strockWidth/2,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y2});
+        context.Svg.select("#lineRight").attr({x1:_lineBox.x2+_strockWidth/2,y1:_lineBox.y-_strockWidth/2,x2:_lineBox.x2+_strockWidth/2,y2:_lineBox.y2+_strockWidth/2,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
+        context.Svg.select("#lineBottom").attr({x1:_lineBox.x-_strockWidth/2,y1:_lineBox.y2+_strockWidth/2,x2:_lineBox.x2+_strockWidth/2,y2:_lineBox.y2+_strockWidth/2,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y});
+        context.Svg.select("#lineLeft").attr({x1:_lineBox.x-_strockWidth/2,y1:_lineBox.y-_strockWidth/2,x2:_lineBox.x-_strockWidth/2,y2:_lineBox.y2+_strockWidth/2,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
         
         let _w = 5;
-        context.Svg.select("#squareLT").attr({x:_lineBox.x-_w,y:_lineBox.y-_w,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y2});
-        context.Svg.select("#squareCT").attr({x:_lineBox.x+_lineBox.width/2-_w/2,y:_lineBox.y-_w,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y2});
-        context.Svg.select("#squareRT").attr({x:_lineBox.x2,y:_lineBox.y-_w,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y2});
-        context.Svg.select("#squareCR").attr({x:_lineBox.x2,y:_lineBox.y+_lineBox.height/2-_w/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
-        context.Svg.select("#squareBR").attr({x:_lineBox.x2,y:_lineBox.y2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y});
-        context.Svg.select("#squareBC").attr({x:_lineBox.x+_lineBox.width/2-_w/2,y:_lineBox.y2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y});
-        context.Svg.select("#squareBL").attr({x:_lineBox.x-_w,y:_lineBox.y2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y});
-        context.Svg.select("#squareCL").attr({x:_lineBox.x-_w,y:_lineBox.y+_lineBox.height/2-_w/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
+        context.Svg.select("#squareLT").attr({x:_lineBox.x-_w-_strockWidth/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y2});
+        context.Svg.select("#squareCT").attr({x:_lineBox.x+_lineBox.width/2-_w/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y2});
+        context.Svg.select("#squareRT").attr({x:_lineBox.x2+_strockWidth/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y2});
+        context.Svg.select("#squareCR").attr({x:_lineBox.x2+_strockWidth/2,y:_lineBox.y+_strockWidth/2+_lineBox.height/2-_w/2-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
+        context.Svg.select("#squareBR").attr({x:_lineBox.x2+_strockWidth/2,y:_lineBox.y2+_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y});
+        context.Svg.select("#squareBC").attr({x:_lineBox.x+_lineBox.width/2-_w/2,y:_lineBox.y2+_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y});
+        context.Svg.select("#squareBL").attr({x:_lineBox.x-_w-_strockWidth/2,y:_lineBox.y2+_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y});
+        context.Svg.select("#squareCL").attr({x:_lineBox.x-_w-_strockWidth/2,y:_lineBox.y+_strockWidth/2+_lineBox.height/2-_w/2-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
 
         let _use = context.Svg.select('#_antBorder');
         if( !isOne ){//如果不是同一个图层则添加.....

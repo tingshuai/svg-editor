@@ -1,5 +1,5 @@
 <template>
-  <section class="container" @mouseleave.stop="mouseleave" @mouseup="mouseUp" @mousemove="mousemove">
+  <section class="container">
     <top></top>
     <div class="bottom">
       <left ref="left" @selTool="selTool" :keys="keys"></left>
@@ -46,7 +46,18 @@ export default {
     let _this = this;
     document.addEventListener('contextmenu', (e)=> {
       e.preventDefault();
-    })      
+    })    
+    document.addEventListener('mousemove', (e)=> {
+      e.preventDefault();      
+      _this.coordinateMove = [e.pageX,e.pageY];
+      _this.$store.state.coordinateMove = [e.pageX,e.pageY];
+    })     
+    document.addEventListener('mouseup', (e)=> {
+      let _storestate = this.$store.state;
+      _this.$refs.left.hid();
+      _storestate.coordinateUp = [ e.pageX,e.pageY ];// 记下鼠标抬起的坐标.....
+      _storestate.timer = false;
+    })          
   },
   computed:{
 
@@ -54,20 +65,6 @@ export default {
   methods:{
     handleScroll(vertical, horizontal, nativeEvent){
     
-    },
-    mousemove(e){
-      this.coordinateMove = [e.pageX,e.pageY];
-      this.$store.state.coordinateMove = [e.pageX,e.pageY];
-    },
-    mouseUp(e){
-      let _storestate = this.$store.state;
-      this.$refs.left.hid();
-      _storestate.coordinateUp = [ e.pageX,e.pageY ];// 记下鼠标抬起的坐标.....
-      _storestate.timer = false;
-      _storestate.mouseevent = 0;
-    },
-    mouseleave(e){
-      this.mouseUp(e);
     },
     selTool(type){
       this.selType = type;

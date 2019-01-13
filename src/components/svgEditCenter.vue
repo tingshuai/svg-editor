@@ -3,18 +3,18 @@
         <svg id="svg" class="svg" @mousedown="mousedown" :class="selType" width="80%" height="80%" style="background-color: white;" xmlns="http://www.w3.org/2000/svg" version="1.1">
           <defs>
               <g id="gAntBorder" data-id="">
-                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineTop" data-type="lineTop" style="cursor:ns-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ns-resize;" class="_controlBar"></line>
-                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineRight" data-type="lineRight" style="cursor:ew-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ew-resize;" class="_controlBar"></line>
-                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineBottom" data-type="lineBottom" style="cursor:ns-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ns-resize;" class="_controlBar"></line>
-                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineLeft" data-type="lineLeft" style="cursor:ew-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ew-resize;" class="_controlBar"></line>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareLT" data-type="squareLT" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;" class="_controlBar"></rect>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCT" data-type="squareCT" style="cursor:ns-resize;stroke-width: 1; cursor: ns-resize;" class="_controlBar"></rect>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareRT" data-type="squareRT" style="cursor:ne-resize;stroke-width: 1; cursor: ne-resize;" class="_controlBar"></rect>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCR" data-type="squareCR" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;" class="_controlBar"></rect>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBR" data-type="squareBR" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;" class="_controlBar"></rect>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBC" data-type="squareBC" style="cursor:nw-resize;stroke-width: 1; cursor: ns-resize;" class="_controlBar"></rect>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="cursor:ns-resize;stroke-width: 1; cursor: ne-resize;" class="_controlBar"></rect>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;" class="_controlBar"></rect>
+                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineTop" data-type="lineTop" style="cursor:ns-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ns-resize;" class="_controlBar" title="缩放"></line>
+                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineRight" data-type="lineRight" style="cursor:ew-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ew-resize;" class="_controlBar" title="缩放"></line>
+                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineBottom" data-type="lineBottom" style="cursor:ns-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ns-resize;" class="_controlBar" title="缩放"></line>
+                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineLeft" data-type="lineLeft" style="cursor:ew-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ew-resize;" class="_controlBar" title="缩放"></line>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareLT" data-type="squareLT" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;" class="_controlBar" title="缩放"></rect>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCT" data-type="squareCT" style="cursor:ns-resize;stroke-width: 1; cursor: ns-resize;" class="_controlBar" title="缩放"></rect>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareRT" data-type="squareRT" style="cursor:ne-resize;stroke-width: 1; cursor: ne-resize;" class="_controlBar" title="缩放"></rect>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCR" data-type="squareCR" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;" class="_controlBar" title="缩放"></rect>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBR" data-type="squareBR" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;" class="_controlBar" title="缩放"></rect>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBC" data-type="squareBC" style="cursor:nw-resize;stroke-width: 1; cursor: ns-resize;" class="_controlBar" title="缩放"></rect>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="cursor:ns-resize;stroke-width: 1; cursor: ne-resize;" class="_controlBar" title="缩放"></rect>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;" class="_controlBar" title="缩放"></rect>
               </g>            
           </defs>
           <use xlink:href="#gAntBorder" id="_antBorder" :style="{display:showAnt ? 'block' :'none' }"></use>
@@ -154,7 +154,6 @@ export default {
       _storeState.coordinateDown = [ e.pageX,e.pageY ];//记录鼠标按下的坐标....
       _storeState.coordinateOffsetDown = [ e.offsetX,e.offsetY ];
       this.draw({ event:{type:"mousedown"} });
-      _storeState.mouseevent = 1;
       e.preventDefault();
     },
     draw(obj){
@@ -204,9 +203,9 @@ export default {
           if( _storeState.timer ){
             if( obj.event.type == "mousedown" ){
               this.$store.commit("addLayer");
-              let _rect = Svg.paper.rect( _storeState.coordinateOffsetDown[0],_storeState.coordinateOffsetDown[1],0,0 ).attr({
+              let _rect = Svg.paper.path(`M${_storeState.coordinateOffsetDown[0]+_storeState.publicAttr.strokeWidth/2} ${_storeState.coordinateOffsetDown[1]+_storeState.publicAttr.strokeWidth/2}`).attr({
                   stroke: "#000",
-                  strokeWidth: 5,
+                  strokeWidth: 10,
                   class:"svgItem",
                   id:'id'+ _storeState.actLayerId,
                   'data-id':_storeState.actLayerId,
@@ -221,8 +220,7 @@ export default {
               this.$store.commit('bindFocusEvent');//以后聚焦显示蚂蚁线......
             }else if(obj.event.type == "mousemove"){
               Svg.select(`#id${_storeState.actLayerId}`).attr({
-                width:_storeState.coordinateMove[0] - _storeState.coordinateDown[0],
-                height:_storeState.coordinateMove[1] - _storeState.coordinateDown[1]
+                d:`M${_storeState.coordinateOffsetDown[0]+_storeState.publicAttr.strokeWidth/2} ${_storeState.coordinateOffsetDown[1]+_storeState.publicAttr.strokeWidth/2}H${_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0]-_storeState.publicAttr.strokeWidth/2}V${_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]-_storeState.publicAttr.strokeWidth/2}H${_storeState.coordinateOffsetDown[0]+_storeState.publicAttr.strokeWidth/2}Z`
               });
               this.$store.commit('addAnt');
             }
