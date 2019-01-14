@@ -135,19 +135,59 @@ export default new Vuex.Store({
             context._matrix.scale((_box.width-obj.x)/_box.width,(_box.height-obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
           }
       }else if( obj.type == "squareCT" || obj.type == "lineTop" ){
-
+          if( obj.e.altKey ){
+            context._matrix.scale(1,(_box.height-obj.y)/_box.height,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]-_box.height/2);
+          }else{
+            context._matrix.scale(1,(_box.height-obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
+          }
       }else if( obj.type == "squareRT" ){
-        
+        if( obj.e.altKey && !obj.e.shiftKey ){
+          context._matrix.scale((_box.width+obj.x)/_box.width,(_box.height-obj.y)/_box.height,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]-_box.height/2);
+        }else if( obj.e.shiftKey && !obj.e.altKey){
+          context._matrix.scale((_box.width+obj.x)/_box.width,(_box.width+obj.x)/_box.width,context.fixedPoint[0],context.fixedPoint[1]);
+        }else if( obj.e.altKey && obj.e.shiftKey ){
+          context._matrix.scale((_box.width+obj.x)/_box.width,(_box.width+obj.x)/_box.width,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]-_box.height/2);
+        }else{
+          context._matrix.scale((_box.width+obj.x)/_box.width,(_box.height-obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
+        }        
       }else if( obj.type == "squareCR" || obj.type == "lineRight" ){
-
+        if( obj.e.altKey ){
+          context._matrix.scale((_box.width+obj.x)/_box.width,1,context.fixedPoint[0]+_box.width/2,context.fixedPoint[1]);
+        }else{
+          context._matrix.scale((_box.width+obj.x)/_box.width,1,context.fixedPoint[0],context.fixedPoint[1]);
+        }
       }else if( obj.type == "squareBR" ){
-
+        if( obj.e.altKey && !obj.e.shiftKey ){
+          context._matrix.scale((_box.width+obj.x)/_box.width,(_box.height+obj.y)/_box.height,context.fixedPoint[0]+_box.width/2,context.fixedPoint[1]+_box.height/2);
+        }else if( obj.e.shiftKey && !obj.e.altKey){
+          context._matrix.scale((_box.width+obj.x)/_box.width,(_box.width+obj.x)/_box.width,context.fixedPoint[0],context.fixedPoint[1]);
+        }else if( obj.e.altKey && obj.e.shiftKey ){
+          context._matrix.scale((_box.width+obj.x)/_box.width,(_box.width+obj.x)/_box.width,context.fixedPoint[0]+_box.width/2,context.fixedPoint[1]+_box.height/2);
+        }else{
+          context._matrix.scale((_box.width+obj.x)/_box.width,(_box.height+obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
+        }
       }else if( obj.type == "squareBC" || obj.type == "lineBottom" ){
-
+        if( obj.e.altKey ){
+          context._matrix.scale(1,(_box.height+obj.y)/_box.height,context.fixedPoint[0]+_box.width/2,context.fixedPoint[1]+_box.height/2);
+        }else{
+          context._matrix.scale(1,(_box.height+obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
+        }
       }else if( obj.type == "squareBL"){
-
+        if( obj.e.altKey && !obj.e.shiftKey ){
+          context._matrix.scale((_box.width+obj.x)/_box.width,(_box.height-obj.y)/_box.height,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]+_box.height/2);
+        }else if( obj.e.shiftKey && !obj.e.altKey){
+          context._matrix.scale((_box.width-obj.x)/_box.width,(_box.width-obj.x)/_box.width,context.fixedPoint[0],context.fixedPoint[1]);
+        }else if( obj.e.altKey && obj.e.shiftKey ){
+          context._matrix.scale((_box.width-obj.x)/_box.width,(_box.width-obj.x)/_box.width,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]+_box.height/2);
+        }else{
+          context._matrix.scale((_box.width-obj.x)/_box.width,(_box.height+obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
+        }    
       }else if( obj.type == "squareCL" || obj.type == "lineLeft" ){
-
+        if( obj.e.altKey ){
+          context._matrix.scale((_box.width-obj.x)/_box.width,1,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]);
+        }else{
+          context._matrix.scale((_box.width-obj.x)/_box.width,1,context.fixedPoint[0],context.fixedPoint[1]);
+        }
       }
       _ele.transform(context._matrix).attr({"vector-effect":"non-scaling-stroke"});
       this.commit("addAnt")
@@ -181,6 +221,9 @@ export default new Vuex.Store({
         context.Svg.select("#squareBC").attr({x:_lineBox.x+_lineBox.width/2-_w/2,y:_lineBox.y2+_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y});
         context.Svg.select("#squareBL").attr({x:_lineBox.x-_w-_strockWidth/2,y:_lineBox.y2+_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y});
         context.Svg.select("#squareCL").attr({x:_lineBox.x-_w-_strockWidth/2,y:_lineBox.y+_strockWidth/2+_lineBox.height/2-_w/2-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
+
+        context.Svg.select("#rotateLine").attr({x1:_lineBox.x2+_strockWidth/2,y1:_lineBox.y+_strockWidth/2+_lineBox.height/2-_strockWidth/2,x2:_lineBox.x2+_strockWidth/2 + 30,y2:_lineBox.y+_strockWidth/2+_lineBox.height/2-_strockWidth/2});
+        context.Svg.select("#rotateBar").attr({cx:_lineBox.x2+_strockWidth/2 + 30,cy:_lineBox.y+_strockWidth/2+_lineBox.height/2-_strockWidth/2,r:5});
 
         let _use = context.Svg.select('#_antBorder');
         if( !isOne ){//如果不是同一个图层则添加.....
