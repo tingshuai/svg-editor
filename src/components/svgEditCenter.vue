@@ -3,21 +3,21 @@
         <svg id="svg" class="svg" @mousedown="mousedown" :class="selType" width="80%" height="80%" style="background-color: white;" xmlns="http://www.w3.org/2000/svg" version="1.1">
           <defs>
               <g id="gAntBorder" data-id="">
-                <line id="rotateLine" x1="0" x2="0" y1="0" y2="0" style="stroke:gray;stroke-width:1"/>
-                <circle id="rotateBar" cx="0" cy="0" r="2.5" stroke="black" stroke-width="0" fill="#00bf63" style="font-size:11px;"/>
+                <line class="_controlBar" id="rotateLine" x1="0" x2="0" y1="0" y2="0" style="stroke:gray;stroke-width:1;vector-effect:non-scaling-stroke"/>
+                <circle class="_controlBar" id="rotateBar" cx="0" cy="0" r="2.5" stroke="black" stroke-width="0" fill="#00bf63" style="font-size:11px;vector-effect:non-scaling-stroke;"/>
 
-                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineTop" data-type="lineTop" style="cursor:ns-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ns-resize;" class="_controlBar" title="缩放"></line>
-                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineRight" data-type="lineRight" style="cursor:ew-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ew-resize;" class="_controlBar" title="缩放"></line>
-                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineBottom" data-type="lineBottom" style="cursor:ns-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ns-resize;" class="_controlBar" title="缩放"></line>
-                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineLeft" data-type="lineLeft" style="cursor:ew-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ew-resize;" class="_controlBar" title="缩放"></line>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareLT" data-type="squareLT" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;" class="_controlBar" title="缩放"></rect>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCT" data-type="squareCT" style="cursor:ns-resize;stroke-width: 1; cursor: ns-resize;" class="_controlBar" title="缩放"></rect>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareRT" data-type="squareRT" style="cursor:ne-resize;stroke-width: 1; cursor: ne-resize;" class="_controlBar" title="缩放"></rect>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCR" data-type="squareCR" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;" class="_controlBar" title="缩放"></rect>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBR" data-type="squareBR" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;" class="_controlBar" title="缩放"></rect>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBC" data-type="squareBC" style="cursor:nw-resize;stroke-width: 1; cursor: ns-resize;" class="_controlBar" title="缩放"></rect>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="cursor:ns-resize;stroke-width: 1; cursor: ne-resize;" class="_controlBar" title="缩放"></rect>
-                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;" class="_controlBar" title="缩放"></rect>
+                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineTop" data-type="lineTop" style="vector-effect:non-scaling-stroke;cursor:ns-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ns-resize;" class="_controlBar" title="缩放"></line>
+                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineRight" data-type="lineRight" style="vector-effect:non-scaling-stroke;cursor:ew-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ew-resize;" class="_controlBar" title="缩放"></line>
+                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineBottom" data-type="lineBottom" style="vector-effect:non-scaling-stroke;cursor:ns-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ns-resize;" class="_controlBar" title="缩放"></line>
+                <line x1="0" x2="0" y1="0" y2="0" stroke="#00bf63" fill="none" id="lineLeft" data-type="lineLeft" style="vector-effect:non-scaling-stroke;cursor:ew-resize;stroke-width: 1; stroke-dasharray: 2, 2; stroke-dashoffset: 0; cursor: ew-resize;" class="_controlBar" title="缩放"></line>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareLT" data-type="squareLT" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCT" data-type="squareCT" style="cursor:ns-resize;stroke-width: 1; cursor: ns-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareRT" data-type="squareRT" style="cursor:ne-resize;stroke-width: 1; cursor: ne-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCR" data-type="squareCR" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBR" data-type="squareBR" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBC" data-type="squareBC" style="cursor:nw-resize;stroke-width: 1; cursor: ns-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="cursor:ns-resize;stroke-width: 1; cursor: ne-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
 
               </g>            
           </defs>
@@ -329,6 +329,9 @@ export default {
   }
 }
 #rotateBar{
-  cursor:url(/src/assets/logo.png),auto;
+  cursor:url(https://www.zhangxinxu.com/sp/svg/images/rotate.png) 12 12,auto;
+}
+#gAntBorder{
+
 }
 </style>
