@@ -42,6 +42,7 @@ export default {
   },
   mounted(){
     this.formula =  "$$\\ce{\\frac{[Hg^2+][Hg]}{[co2^2+]}}$$";
+    let _storestate = this.$store.state;
     // MathJax.Hub.Queue(["Typeset", MathJax.Hub])
     let _this = this;
     document.addEventListener('contextmenu', (e)=> {
@@ -53,11 +54,11 @@ export default {
       _this.$store.state.coordinateMove = [e.pageX,e.pageY];
     })     
     document.addEventListener('mouseup', (e)=> {
-      let _storestate = this.$store.state;
       _this.$refs.left.hid();
       _storestate.coordinateUp = [ e.pageX,e.pageY ];// 记下鼠标抬起的坐标.....
       _storestate.timer = false;
-    })          
+    })     
+    _storestate._matrix = new Snap.Matrix(1,0,0,1,0,0);
   },
   computed:{
 
