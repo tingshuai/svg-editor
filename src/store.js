@@ -101,7 +101,10 @@ export default new Vuex.Store({
         let _id = null;
         let onend = (e)=>{
           e.stopPropagation();
-          // this.commit("resizeEnd",{"e":e,"id":_id,"type":type});
+          console.log("type",type);
+          if(type != "rotateBar"){
+            this.commit("resizeEnd",{"e":e,"id":_id,"type":type});
+          }
         }
         let onmove = (x,y,cx,cy,e)=>{
           e.stopPropagation();
@@ -218,9 +221,19 @@ export default new Vuex.Store({
           _ele.transform(context._matrix).attr({"vector-effect":"non-scaling-stroke"});
           this.commit("addAnt")
       }else if( obj.type == "rotateBar" ){
+        console.log("deg",Snap.angle(context.fixedPoint[0],context.fixedPoint[1], obj.e.offsetX,obj.e.offsetY)-180,context.fixedPoint[0],context.fixedPoint[1]);
+        
         context._matrix.rotate(Snap.angle(context.fixedPoint[0],context.fixedPoint[1], obj.e.offsetX,obj.e.offsetY)-180,context.fixedPoint[0],context.fixedPoint[1]);
+        console.log("mm",context._matrix.split() );
         _antBorder.transform(context._matrix);
+        // _ele.transform(context._matrix).attr({"vector-effect":"non-scaling-stroke"});
+        let pathTransform = Snap.path.map(_ele.attr("d").toString(), context._matrix).toString()+"Z";
         _gele.transform(context._matrix);
+        this.commit("addAnt")
+
+        // _ele.attr({d:pathTransform});//将变换写入path..
+        // let _m = new Snap.Matrix();
+        // _ele.transform(_m);//重置焦点元素matrix
       }
     },
     resizeEnd(context,obj){//结束变换触发....
@@ -229,8 +242,9 @@ export default new Vuex.Store({
         let pathTransform = Snap.path.map(_ele.attr("d").toString(), context._matrix).toString()+"Z";
         let _m = new Snap.Matrix();
         _ele.attr({d:pathTransform});//将变换写入path..
-        _ele.transform(_m);//重置焦点元素matrix
+        
         // _gele.transform(_m);//重置g元素matrix
+        _ele.transform(_m);//重置焦点元素matrix
         // this.commit("addAnt");//将变换写入蚂蚁线.....
         // if(obj.type == "rotateBar"){
           
@@ -239,12 +253,14 @@ export default new Vuex.Store({
     addAnt(context){//重绘控制点.....
 
         let _lineBox = context.Svg.select(`#id${context.actLayerId}`).getBBox();
+        
         let _strockWidth = Number( context.Svg.select(`#id${context.actLayerId}`).attr("stroke-width").replace('px',''));
         let isOne = context.actLayerId == context.Svg.select('#_antBorder').attr("data-id") ? true : false;//判断是否是同一个图层.....
         context.Svg.select("#_antBorder").attr({'data-id':context.actLayerId});
         context.Svg.select("#_antLine").attr({d:`M${_lineBox.x-_strockWidth/2} ${_lineBox.y-_strockWidth/2}H${_lineBox.x2+_strockWidth/2}V${_lineBox.y2+_strockWidth/2}H${_lineBox.x-_strockWidth/2}Z`});
         let _w = 5;
-        // context.Svg.paper.circle(_lineBox.x2,_lineBox.y2,5).attr({fill:"red"});
+        context.Svg.paper.circle(_lineBox.cx,_lineBox.cy,_lineBox.r1).attr({fill:`#${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}`,"z-index":0});
+        context.Svg.paper.circle(_lineBox.x,_lineBox.y,5).attr({fill:"red"});
         context.Svg.select("#squareLT").attr({x:_lineBox.x-_w-_strockWidth/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y2});
         context.Svg.select("#squareCT").attr({x:_lineBox.x+_lineBox.width/2-_w/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y2});
         context.Svg.select("#squareRT").attr({x:_lineBox.x2+_strockWidth/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y2});
