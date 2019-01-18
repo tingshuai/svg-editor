@@ -27,12 +27,15 @@ export default new Vuex.Store({
       e:"",
       state:""
     },
-    publicAttr:{
+    actItem:{
       "fill":"none",
       "stroke":"black",
       "strokeWidth":5,
       "strokeDasharray":0,
-      "strokeDashoffset":0
+      "strokeDashoffset":0,
+      rotate:0,
+      xita:null,
+      matrix:null
     },
     _matrix:null,//变换矩阵....
     fixedPoint:[],//变换时的定点坐标......
@@ -59,7 +62,7 @@ export default new Vuex.Store({
         let _ele,_gele;
         let onend = (e)=>{
           context.itemMoveMsg.state = "end";
-          // this.commit("resizeEnd",{"e":e,"id":_dataset.id,"type":_dataset.type});
+          this.commit("resizeEnd",{"e":e,"id":_dataset.id,"type":_dataset.type});
         }
         let onmove = (x,y,cx,cy,e)=>{
           context.itemMoveMsg.x = x;
@@ -235,7 +238,6 @@ export default new Vuex.Store({
         let _gele = context.Svg.select(`#gid${obj.id}`);
         let pathTransform = Snap.path.map(_ele.getBBox().path.toString(), context._matrix).toString()+"Z";
 
-
         console.log(context._matrix.split().rotate);
         
         let _m = new Snap.Matrix();
@@ -259,25 +261,39 @@ export default new Vuex.Store({
         let isOne = context.actLayerId == context.Svg.select('#_antBorder').attr("data-id") ? true : false;//判断是否是同一个图层.....
         context.Svg.select("#_antBorder").attr({'data-id':context.actLayerId});
         context.Svg.select("#_antLine").attr({d:`M${_lineBox.x-_strockWidth/2} ${_lineBox.y-_strockWidth/2}H${_lineBox.x2+_strockWidth/2}V${_lineBox.y2+_strockWidth/2}H${_lineBox.x-_strockWidth/2}Z`});
-        console.log("height",_lineBox);
-        
-        let _w = 5,xita = Snap.atan(_lineBox.height/_lineBox.width),alpha = context._matrix.split().rotate;
-        console.log("xita",xita);
-        console.log("alpha",alpha);
-        if( alpha<=0 ){
-          if( Math.abs(alpha)+xita > 0 && Math.abs(alpha)+xita <= 90 ){
-            console.log("第一象限");
-          }else{
-            console.log("第二象限");
-          }
-        }else{
-          if( Math.abs(alpha)-xita >= 0 && Math.abs(alpha)-xita <= 90 ){
-            console.log("第四象限");
-          }else{
-            console.log("第三象限");
-          }          
-        }
-        context.Svg.paper.circle(_lineBox.cx,_lineBox.cy,_lineBox.r1).attr({fill:`#${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}`,"z-index":0});
+        context.actItem.matrix = context._matrix;
+        let _w = 5,_xita = Snap.atan(_lineBox.height/_lineBox.width),_alpha = context._matrix.split().rotate;
+        context.actItem.xita = _xita;
+        context.actItem.rotate = _alpha;
+        console.log("xita",_xita);
+        console.log("_alpha",_alpha);
+        // if( (_alpha > -22.5 && _alpha < 22.5) || (_alpha >= 157.5 && _alpha < 202.5) ){
+        //   console.log(111);
+        //   context.Svg.select("#squareCL").attr({cursor:"ew-resize"});
+        //   context.Svg.select("#squareCR").attr({cursor:"ew-resize"});
+
+        //   context.Svg.select("#squareLT").attr({cursor:"nw-resize"});
+        //   context.Svg.select("#squareBR").attr({cursor:"nw-resize"}); 
+
+        //   context.Svg.select("#squareCT").attr({cursor:"ns-resize"});
+        //   context.Svg.select("#squareBC").attr({cursor:"ns-resize"});   
+
+        //   context.Svg.select("#squareBL").attr({cursor:"ne-resize"});
+        //   context.Svg.select("#squareRT").attr({cursor:"ne-resize"});                          
+        // }else if( (_alpha >= 22.5 && _alpha < 67.5) || (_alpha >= 202.5 && _alpha < 247.5) ){
+        //   console.log(222);
+        //   context.Svg.select("#squareLT").attr({cursor:"nw-resize"});
+        //   context.Svg.select("#squareBR").attr({cursor:"nw-resize"});
+        // }else if( (_alpha >=67.5 && _alpha<112.5)||(_alpha >= 247.5 && _alpha<270)||(_alpha>=-90 && _alpha<-67.5)){
+        //   console.log(333);
+        //   context.Svg.select("#squareCT").attr({cursor:"ns-resize"});
+        //   context.Svg.select("#squareBC").attr({cursor:"ns-resize"});
+        // }else{
+        //   context.Svg.select("#squareBL").attr({cursor:"ne-resize"});
+        //   context.Svg.select("#squareRT").attr({cursor:"ne-resize"});
+        //   console.log(444);
+        // }
+        context.Svg.paper.circle(_lineBox.x,_lineBox.y,_lineBox.r1).attr({fill:`#${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}`,"z-index":0});
         context.Svg.paper.circle(_lineBox.x-_w-_strockWidth/2,_lineBox.y-_w-_strockWidth/2,5).attr({fill:"red"});
         context.Svg.select("#squareLT").attr({x:_lineBox.x-_w-_strockWidth/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y2});
         context.Svg.select("#squareCT").attr({x:_lineBox.x+_lineBox.width/2-_w/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y2});
@@ -291,7 +307,6 @@ export default new Vuex.Store({
         context.Svg.select("#rotateLine").attr({d:`M${_lineBox.x2+_strockWidth/2} ${_lineBox.y+_strockWidth/2+_lineBox.height/2-_strockWidth/2}L${_lineBox.x2+_strockWidth/2 + 30} ${_lineBox.y+_strockWidth/2+_lineBox.height/2-_strockWidth/2}`});
         context.Svg.select("#rotateBar").attr({cx:_lineBox.x2+_strockWidth/2 + 30,cy:_lineBox.y+_strockWidth/2+_lineBox.height/2-_strockWidth/2,r:5,"data-fixedpoint_x":_lineBox.cx,"data-fixedpoint_y":_lineBox.cy,"data-id":context.actLayerId});
 
-        let _use = context.Svg.select('#_antBorder');
         context.showAnt ? null : context.showAnt = true;
     }
   },
