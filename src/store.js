@@ -89,7 +89,7 @@ export default new Vuex.Store({
             cursor:"move"
           })
         });
-      });  
+      });
     },
     addLayer(context){
       let _time = new Date().getTime();
@@ -152,6 +152,7 @@ export default new Vuex.Store({
           }else if( obj.e.altKey && obj.e.shiftKey ){
             context._matrix.scale((_box.width-obj.x)/_box.width,(_box.width-obj.x)/_box.width,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]-_box.height/2);
           }else{
+
             context._matrix.scale((_box.width-obj.x)/_box.width,(_box.height-obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
           }
           _ele.transform(context._matrix).attr({"vector-effect":"non-scaling-stroke"});
@@ -234,23 +235,16 @@ export default new Vuex.Store({
       }
     },
     resizeEnd(context,obj){//结束变换触发....
-        let _ele = context.Svg.select(`#id${obj.id}`);
-        let _gele = context.Svg.select(`#gid${obj.id}`);
-        let pathTransform = Snap.path.map(_ele.getBBox().path.toString(), context._matrix).toString()+"Z";
-
-        console.log(context._matrix.split().rotate);
-        
+      let _ele = context.Svg.select(`#id${obj.id}`);
+      let _gele = context.Svg.select(`#gid${obj.id}`);
+      let pathTransform = Snap.path.map(_ele.attr('d').toString(), context._matrix).toString()+"Z";
+      console.log("id-----",_ele.getBBox().path.toString());
         let _m = new Snap.Matrix();
-        _gele.transform(_m);//重置g元素matrix
-        _gele.transform(context._matrix);
-
         _ele.attr({d:pathTransform});//将变换写入path..
-        // _ele.transform(_m);//重置焦点元素matrix
+        _ele.transform(_m);//重置焦点元素matrix
         // _ele.attr({d:pathTransform});//将变换写入path..
-        
         // this.commit("addAnt");//将变换写入蚂蚁线.....
         // if(obj.type == "rotateBar"){
-          
         // }
     },
     addAnt(context){//重绘控制点.....
@@ -293,8 +287,8 @@ export default new Vuex.Store({
         //   context.Svg.select("#squareRT").attr({cursor:"ne-resize"});
         //   console.log(444);
         // }
-        context.Svg.paper.circle(_lineBox.x,_lineBox.y,_lineBox.r1).attr({fill:`#${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}`,"z-index":0});
-        context.Svg.paper.circle(_lineBox.x-_w-_strockWidth/2,_lineBox.y-_w-_strockWidth/2,5).attr({fill:"red"});
+        context.Svg.paper.circle(_lineBox.cx,_lineBox.cy,5).attr({fill:`#${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}`,"z-index":0});
+        // context.Svg.paper.circle(_lineBox.x-_w-_strockWidth/2,_lineBox.y-_w-_strockWidth/2,5).attr({fill:"red"});
         context.Svg.select("#squareLT").attr({x:_lineBox.x-_w-_strockWidth/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y2});
         context.Svg.select("#squareCT").attr({x:_lineBox.x+_lineBox.width/2-_w/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y2});
         context.Svg.select("#squareRT").attr({x:_lineBox.x2+_strockWidth/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y2});
