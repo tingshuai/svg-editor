@@ -33,9 +33,10 @@ export default new Vuex.Store({
       "strokeWidth":5,
       "strokeDasharray":0,
       "strokeDashoffset":0,
-      rotate:0,
+      newRotate:0,
       xita:null,
-      matrix:null
+      matrix:null,
+      oldRotate:0
     },
     _matrix:null,//变换矩阵....
     fixedPoint:[],//变换时的定点坐标......
@@ -97,7 +98,14 @@ export default new Vuex.Store({
       context.layer.push({
         name:"图层" + (context.layer.length + 1),
         id:context.actLayerId,
-        matrix:new Snap.Matrix()
+        matrix:new Snap.Matrix(),
+        "fill":"none",
+        "stroke":"black",
+        "strokeWidth":5,
+        "strokeDasharray":0,
+        "strokeDashoffset":0,
+        rotate:0,
+        xita:null,
       })
     },
     bindResize(context){
@@ -105,17 +113,14 @@ export default new Vuex.Store({
         let _id = null;
         let onend = (e)=>{
           e.stopPropagation();
-          console.log("type",type);
-          if(type != "rotateBar"){
-            this.commit("resizeEnd",{"e":e,"id":_id,"type":type});
-          }
+          console.log( "type" , type );
+          this.commit("resizeEnd",{"e":e,"id":_id,"type":type});
         }
         let onmove = (x,y,cx,cy,e)=>{
           e.stopPropagation();
           this.commit("resize",{"x":x,"y":y,"cx":cx,"cy":cy,"e":e,"type":type,id:_id});
         }
         let onstart = (cx,cy,e)=>{
-          e.stopPropagation();
           //获取焦点元素ID
           let _dataset = e.srcElement.dataset;
           _id = _dataset.id;
@@ -127,6 +132,14 @@ export default new Vuex.Store({
             context.fixedPoint[2] = _box.cx;
             context.fixedPoint[3] = _box.cy;
           }
+          context.layer.find((val,i,arr)=>{
+            if( val.id == _id ){
+              context.actItem.matrix = val.matrix;
+            }
+          });
+          context.coordinateOffsetDown[0] = e.offsetX;
+          context.coordinateOffsetDown[1] = e.offsetY;
+          e.stopPropagation();
         }
         context.Svg.select(`#${type}`).drag( onmove,onstart,onend );
       }
@@ -195,8 +208,8 @@ export default new Vuex.Store({
         }else{
           context._matrix.scale((_box.width+obj.x)/_box.width,(_box.height+obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
         }
-          _ele.transform(context._matrix).attr({"vector-effect":"non-scaling-stroke"});
-          this.commit("addAnt")
+        _ele.transform(context._matrix).attr({"vector-effect":"non-scaling-stroke"});
+        this.commit("addAnt");
       }else if( obj.type == "squareBC" || obj.type == "lineBottom" ){
         if( obj.e.altKey ){
           context._matrix.scale(1,(_box.height+obj.y)/_box.height,context.fixedPoint[0]+_box.width/2,context.fixedPoint[1]+_box.height/2);
@@ -226,22 +239,36 @@ export default new Vuex.Store({
           _ele.transform(context._matrix).attr({"vector-effect":"non-scaling-stroke"});
           this.commit("addAnt")
         }else if( obj.type == "rotateBar" ){
-          context._matrix.rotate(Snap.angle(context.fixedPoint[0],context.fixedPoint[1], obj.e.offsetX,obj.e.offsetY)-180,context.fixedPoint[0],context.fixedPoint[1]);
-          _antBorder.transform(context._matrix);
-          _gele.transform(context._matrix);
-          this.commit("addAnt");
+          context._matrix = new Snap.Matrix();
+          let _rotate = Snap.angle( context.fixedPoint[0],context.fixedPoint[1], obj.e.offsetX,obj.e.offsetY )-180;
+          context._matrix.rotate( _rotate, context.fixedPoint[0],context.fixedPoint[1] );
+          _antBorder.transform( context._matrix );
+          
+          // console.log( "deg",Snap.angle( context.fixedPoint[0],context.fixedPoint[1], obj.e.offsetX,obj.e.offsetY )-180 );
+          // context.Svg.select("#polyline").attr({points:`${context.fixedPoint[0]},${context.fixedPoint[1]} ${obj.e.offsetX},${obj.e.offsetY}`}).attr({fill:"none",stroke:"#00ffff"});
+
+          // this.commit("addAnt");
+          // let pathTransform = Snap.path.map( _ele.attr('d').toString(), context._matrix ).toString()+"Z";
           // let _m = new Snap.Matrix();
+
           // _ele.transform(_m);//重置焦点元素matrix
+          // _ele.attr({d:pathTransform});//将变换写入path..
       }
     },
     resizeEnd(context,obj){//结束变换触发....
       let _ele = context.Svg.select(`#id${obj.id}`);
       let _gele = context.Svg.select(`#gid${obj.id}`);
-      let pathTransform = Snap.path.map(_ele.attr('d').toString(), context._matrix).toString()+"Z";
-      console.log("id-----",_ele.getBBox().path.toString());
         let _m = new Snap.Matrix();
-        _ele.attr({d:pathTransform});//将变换写入path..
-        _ele.transform(_m);//重置焦点元素matrix
+        // _ele.attr({d:pathTransform});//将变换写入path..
+        _gele.transform(_m);//重置焦点元素matrix
+        context.layer.find((val,i,arr)=>{
+          if( val.id == obj.id ){
+            val.matrix = context._matrix;
+            // let _new = new Snap.Matrix().rotate(context.actItem.newRotate ,context.fixedPoint[0],context.fixedPoint[1]);
+
+            // arr[i].rotate = context.actItem.newRotate;
+          }
+        });
         // _ele.attr({d:pathTransform});//将变换写入path..
         // this.commit("addAnt");//将变换写入蚂蚁线.....
         // if(obj.type == "rotateBar"){
@@ -258,7 +285,6 @@ export default new Vuex.Store({
         context.actItem.matrix = context._matrix;
         let _w = 5,_xita = Snap.atan(_lineBox.height/_lineBox.width),_alpha = context._matrix.split().rotate;
         context.actItem.xita = _xita;
-        context.actItem.rotate = _alpha;
         console.log("xita",_xita);
         console.log("_alpha",_alpha);
         // if( (_alpha > -22.5 && _alpha < 22.5) || (_alpha >= 157.5 && _alpha < 202.5) ){
@@ -287,8 +313,8 @@ export default new Vuex.Store({
         //   context.Svg.select("#squareRT").attr({cursor:"ne-resize"});
         //   console.log(444);
         // }
-        context.Svg.paper.circle(_lineBox.cx,_lineBox.cy,5).attr({fill:`#${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}`,"z-index":0});
-        // context.Svg.paper.circle(_lineBox.x-_w-_strockWidth/2,_lineBox.y-_w-_strockWidth/2,5).attr({fill:"red"});
+        // context.Svg.paper.circle(_lineBox.cx,_lineBox.cy,5).attr({fill:`#${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}`,"z-index":0});
+        // context.Svg.paper.circle(_lineBox.x,_lineBox.y,5).attr({ fill:"red"} );
         context.Svg.select("#squareLT").attr({x:_lineBox.x-_w-_strockWidth/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y2});
         context.Svg.select("#squareCT").attr({x:_lineBox.x+_lineBox.width/2-_w/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y2});
         context.Svg.select("#squareRT").attr({x:_lineBox.x2+_strockWidth/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y2});

@@ -16,6 +16,7 @@
               <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
             </g>
           </g>
+          
         </svg>
         <div class="posiMsg" :style="{'left':dragPosition.x +'px','top':dragPosition.y + 'px'}" v-if="movePosition.show">
           <section class="part part1">
@@ -49,7 +50,6 @@ export default {
   },  
   data () {
     return {
-      layer:[],//图层......
       moveType:"",
       dragPosition:{
         x:0,
@@ -73,6 +73,12 @@ export default {
     },
     showAnt(){
       return this.$store.state.showAnt
+    },
+    layer(){
+      return this.$store.state.layer
+    },
+    _matrix(){
+      return this.$store.state._matrix
     }
   },
   mounted(){
@@ -83,6 +89,9 @@ export default {
     this.$store.commit("bindFocusEvent");
     this.$store.commit("bindDrag");
     this.$store.commit("bindResize");
+
+    this.$store.state.Svg.paper.polyline().attr({id:"polyline","stroke-width":5});
+
   },
   watch:{
     selType(n,o){
@@ -106,6 +115,19 @@ export default {
         this.draw({ event:{type:"mousemove"} });
       },
       deep:true
+    },
+    _matrix:{
+      handler(n,o){
+        let _storeState = this.$store.state;
+        if( _storeState.actLayerId != null ){
+          let _ele = _storeState.Svg.select(`#id${_storeState.actLayerId}`);
+          let _gele = _storeState.Svg.select(`#gid${_storeState.actLayerId}`);   
+          let newMatrix = o.invert().add( n );
+          let newPath = _storeState.Snap.path.map(_ele.attr('d').toString(), newMatrix).toString()+"Z";
+          _ele.attr({d:newPath});//将变换写入path..        
+        }
+      },
+      deep:true      
     },
     coordinateClientMove:{
       handler(n,o){
