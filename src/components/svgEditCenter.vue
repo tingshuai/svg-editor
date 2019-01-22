@@ -2,19 +2,17 @@
       <section class="center">
         <svg id="svg" class="svg" @mousedown="mousedown" :class="selType" width="80%" height="80%" style="background-color: white;" xmlns="http://www.w3.org/2000/svg" version="1.1">
           <g id="_antBorder" data-id="" :style="{display:showAnt ? 'block' :'none' }" style="vector-effect:non-scaling-stroke;">
-            <g>
               <path id="rotateLine" style="stroke:gray;stroke-width:1;vector-effect:non-scaling-stroke"></path>
-              <circle class="_controlBar" data-type="rotateBar" id="rotateBar" cx="0" cy="0" r="2.5" stroke="black" stroke-width="0" fill="#00bf63" style="font-size:11px;vector-effect:non-scaling-stroke;"/>
+              <path class="_controlBar" data-type="rotateBar" id="rotateBar" stroke="black" stroke-width="0" fill="#00bf63" style="font-size:11px;vector-effect:non-scaling-stroke;"></path>
               <path id="_antLine" stroke="#00bf63" d="" fill="none" style="vector-effect:non-scaling-stroke;stroke-dasharray: 2, 2; stroke-dashoffset: 0;" ></path>
-              <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareLT" data-type="squareLT" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-              <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCT" data-type="squareCT" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-              <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareRT" data-type="squareRT" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-              <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCR" data-type="squareCR" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-              <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBR" data-type="squareBR" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-              <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBC" data-type="squareBC" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-              <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-              <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-            </g>
+              <path stroke="#00bf63" fill="#00bf63" id="squareLT" data-type="squareLT" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
+              <path stroke="#00bf63" fill="#00bf63" id="squareCT" data-type="squareCT" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
+              <path stroke="#00bf63" fill="#00bf63" id="squareRT" data-type="squareRT" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
+              <path stroke="#00bf63" fill="#00bf63" id="squareCR" data-type="squareCR" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
+              <path stroke="#00bf63" fill="#00bf63" id="squareBR" data-type="squareBR" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
+              <path stroke="#00bf63" fill="#00bf63" id="squareBC" data-type="squareBC" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
+              <path stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
+              <path stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
           </g>
           
         </svg>
@@ -119,13 +117,6 @@ export default {
     _matrix:{
       handler(n,o){
         let _storeState = this.$store.state;
-        if( _storeState.actLayerId != null ){
-          let _ele = _storeState.Svg.select(`#id${_storeState.actLayerId}`);
-          let _gele = _storeState.Svg.select(`#gid${_storeState.actLayerId}`);   
-          let newMatrix = o.invert().add( n );
-          let newPath = _storeState.Snap.path.map(_ele.attr('d').toString(), newMatrix).toString()+"Z";
-          _ele.attr({d:newPath});//将变换写入path..        
-        }
       },
       deep:true      
     },
