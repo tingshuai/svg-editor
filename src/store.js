@@ -237,6 +237,10 @@ export default new Vuex.Store({
           context._matrix.rotate( _rotate, context.fixedPoint[0],context.fixedPoint[1] );
           _antBorder.transform( context._matrix );
           _ele.transform( context._matrix );
+
+          
+          let _lineBox = context.Svg.select(`#id${context.actLayerId}`).getBBox();
+          context.Svg.select("#_antLine").attr({ d:_lineBox.path.toString() });         
           // _ele.transform( context.actItem.matrix.invert().add(context._matrix) );
           // this.commit("addAnt");
       }
@@ -250,9 +254,10 @@ export default new Vuex.Store({
       context.layer.find((val,i,arr)=>{
         if( val.id == obj.id ){
           let newPath = context.Snap.path.map(_ele.attr('d').toString(), context._matrix).toString()+"Z";
-          _ele.transform(_m).attr({d:newPath});//重置焦点元素matrix  将变换写入path..    
-          _antBorder.transform(_m);
-          this.commit("addAnt");
+          // _ele.transform(_m).attr({d:newPath});//重置焦点元素matrix  将变换写入path..    
+          // _antBorder.transform(_m);
+          // this.commit("addAnt");
+
           val.matrix = context._matrix;
         }
       });
@@ -264,6 +269,7 @@ export default new Vuex.Store({
         let isOne = context.actLayerId == context.Svg.select('#_antBorder').attr("data-id") ? true : false;//判断是否是同一个图层.....
         context.Svg.select("#_antBorder").attr({'data-id':context.actLayerId});
         context.Svg.select("#_antLine").attr({d:`M${_lineBox.x-_strockWidth/2} ${_lineBox.y-_strockWidth/2}H${_lineBox.x2+_strockWidth/2}V${_lineBox.y2+_strockWidth/2}H${_lineBox.x-_strockWidth/2}Z`});
+        context.Svg.select("#_antLine").attr({ d:_lineBox.path.toString() });
         let _w = 5,_xita = Snap.atan(_lineBox.height/_lineBox.width),_alpha = context._matrix.split().rotate;
         context.actItem.xita = _xita;
         console.log( _lineBox  );
