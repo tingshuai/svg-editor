@@ -5,16 +5,15 @@
               <path id="rotateLine" style="stroke:gray;stroke-width:1;vector-effect:non-scaling-stroke"></path>
               <path class="_controlBar" data-type="rotateBar" id="rotateBar" stroke="black" stroke-width="0" fill="#00bf63" style="font-size:11px;vector-effect:non-scaling-stroke;"></path>
               <path id="_antLine" stroke="#00bf63" d="" fill="none" style="vector-effect:non-scaling-stroke;stroke-dasharray: 2, 2; stroke-dashoffset: 0;" ></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareLT" data-type="squareLT" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareCT" data-type="squareCT" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareRT" data-type="squareRT" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareCR" data-type="squareCR" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareBR" data-type="squareBR" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareBC" data-type="squareBC" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="stroke-width: 1; vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></path>
+              <path stroke="#00bf63" fill="#00bf63" id="squareLT" data-type="squareLT" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:nw-resize" class="_controlBar" title="缩放"></path>
+              <path stroke="#00bf63" fill="#00bf63" id="squareCT" data-type="squareCT" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:n-resize" class="_controlBar" title="缩放"></path>
+              <path stroke="#00bf63" fill="#00bf63" id="squareRT" data-type="squareRT" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:ne-resize" class="_controlBar" title="缩放"></path>
+              <path stroke="#00bf63" fill="#00bf63" id="squareCR" data-type="squareCR" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:w-resize" class="_controlBar" title="缩放"></path>
+              <path stroke="#00bf63" fill="#00bf63" id="squareBR" data-type="squareBR" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:nw-resize" class="_controlBar" title="缩放"></path>
+              <path stroke="#00bf63" fill="#00bf63" id="squareBC" data-type="squareBC" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:n-resize" class="_controlBar" title="缩放"></path>
+              <path stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:ne-resize" class="_controlBar" title="缩放"></path>
+              <path stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:w-resize" class="_controlBar" title="缩放"></path>
           </g>
-          
         </svg>
         <div class="posiMsg" :style="{'left':dragPosition.x +'px','top':dragPosition.y + 'px'}" v-if="movePosition.show">
           <section class="part part1">
@@ -69,8 +68,10 @@ export default {
     coordinateClientMove(){
       return this.$store.state.itemMoveMsg;
     },
-    showAnt(){
-      return this.$store.state.showAnt
+    showAnt:{
+      get () {
+        return this.$store.state.showAnt
+      }
     },
     layer(){
       return this.$store.state.layer
@@ -87,9 +88,6 @@ export default {
     this.$store.commit("bindFocusEvent");
     this.$store.commit("bindDrag");
     this.$store.commit("bindResize");
-
-    this.$store.state.Svg.paper.polyline().attr({id:"polyline","stroke-width":5});
-
   },
   watch:{
     selType(n,o){

@@ -10,6 +10,7 @@ export default new Vuex.Store({
   state: {
     Snap:null,
     Svg:null,
+    Draw:null,
     coordinateDown:[],//鼠标按下的坐标.....
     coordinateUp:null,//鼠标抬起的坐标.....   
     coordinateOffsetDown:[],//鼠标相对于svg的偏移.....
@@ -59,6 +60,7 @@ export default new Vuex.Store({
       context.Svg.selectAll(".gSvgItem").forEach((ele,i,arr)=>{
         let _dataset;
         let _ele,_gele;
+        ele.drag();
         let onend = (e)=>{
           context.itemMoveMsg.state = "end";
           this.commit("resizeEnd",{"e":e,"id":_dataset.id,"type":_dataset.type});
@@ -74,8 +76,9 @@ export default new Vuex.Store({
         }
         let onstart = (cx,cy,e)=>{
           context.itemMoveMsg.cx = cx;
-          context.itemMoveMsg.cy = cy;          
+          context.itemMoveMsg.cy = cy;
           context.itemMoveMsg.state = "start";
+          context.showAnt = false;
           _dataset = e.srcElement.dataset;
           _ele = context.Svg.select(`#id${_dataset.id}`);
           _gele = context.Svg.select(`#gid${_dataset.id}`);
@@ -161,7 +164,7 @@ export default new Vuex.Store({
       context._matrix = new Snap.Matrix();
       if( obj.type == "squareLT" ){
           if( obj.e.altKey && !obj.e.shiftKey ){ 
-            context._matrix.scale((_box.width-obj.x)/_box.width,(_box.height-obj.y)/_box.height,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]-_box.height/2);
+            context._matrix.scale((_box.width-obj.x)/_box.width,(_box.height-obj.y)/_box.height,_box.cx,_box.cy);
           }else if( obj.e.shiftKey && !obj.e.altKey){
             context._matrix.scale((_box.width-obj.x)/_box.width,(_box.width-obj.x)/_box.width,context.fixedPoint[0],context.fixedPoint[1]);
           }else if( obj.e.altKey && obj.e.shiftKey ){
@@ -179,11 +182,12 @@ export default new Vuex.Store({
           _ele.transform(context._matrix).attr({"vector-effect":"non-scaling-stroke"});
       }else if( obj.type == "squareRT" ){
         if( obj.e.altKey && !obj.e.shiftKey ){
-          context._matrix.scale((_box.width+obj.x)/_box.width,(_box.height-obj.y)/_box.height,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]-_box.height/2);
+          context.Svg.paper.circle(_box.cx,_box.cy,5).attr({ fill:"red"} );
+          context._matrix.scale((_box.width+obj.x)/_box.width,(_box.height-obj.y)/_box.height,_box.cx,_box.cy);
         }else if( obj.e.shiftKey && !obj.e.altKey){
           context._matrix.scale((_box.width+obj.x)/_box.width,(_box.width+obj.x)/_box.width,context.fixedPoint[0],context.fixedPoint[1]);
         }else if( obj.e.altKey && obj.e.shiftKey ){
-          context._matrix.scale((_box.width+obj.x)/_box.width,(_box.width+obj.x)/_box.width,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]-_box.height/2);
+          context._matrix.scale((_box.width+obj.x)/_box.width,(_box.width+obj.x)/_box.width,_box.cx,_box.cy);
         }else{
           context._matrix.scale((_box.width+obj.x)/_box.width,(_box.height-obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
         }   
@@ -235,46 +239,44 @@ export default new Vuex.Store({
           context._matrix = new Snap.Matrix();
           let _rotate = Snap.angle( context.fixedPoint[0],context.fixedPoint[1], obj.e.offsetX,obj.e.offsetY )-180;
           context._matrix.rotate( _rotate, context.fixedPoint[0],context.fixedPoint[1] );
-          _antBorder.transform( context._matrix );
+          // _antBorder.transform( context._matrix );
           _ele.transform( context._matrix );
-
           
           let _lineBox = context.Svg.select(`#id${context.actLayerId}`).getBBox();
           context.Svg.select("#_antLine").attr({ d:_lineBox.path.toString() });         
           // _ele.transform( context.actItem.matrix.invert().add(context._matrix) );
-          // this.commit("addAnt");
-      }
+        }
+        this.commit("addAnt");
     },
     resizeEnd(context,obj){//结束变换触发....
       let _ele = context.Svg.select(`#id${obj.id}`);
       let _gele = context.Svg.select(`#gid${obj.id}`);
       let _m = new Snap.Matrix();
       let _antBorder = context.Svg.select("#_antBorder");
-
-      context.layer.find((val,i,arr)=>{
-        if( val.id == obj.id ){
-          let newPath = context.Snap.path.map(_ele.attr('d').toString(), context._matrix).toString()+"Z";
-          // _ele.transform(_m).attr({d:newPath});//重置焦点元素matrix  将变换写入path..    
-          // _antBorder.transform(_m);
-          // this.commit("addAnt");
-
-          val.matrix = context._matrix;
-        }
-      });
+      if( context._matrix.toTransformString() != _m.toTransformString() ){
+        context.layer.find((val,i,arr)=>{
+          if( val.id == obj.id ){
+            let newPath = context.Snap.path.map(_ele.attr('d').toString(), context._matrix).toString()+"Z";
+            _ele.transform(_m).attr({d:newPath});//重置焦点元素matrix  将变换写入path..    
+            _gele.transform(_m);
+            val.matrix = context._matrix;
+          }
+        });
+        this.commit("addAnt");
+        context.showAnt = true;
+        context._matrix = new Snap.Matrix();
+      }
     },
     addAnt(context){//重绘控制点.....
         let _lineBox = context.Svg.select(`#id${context.actLayerId}`).getBBox();
-        
         let _strockWidth = Number( context.Svg.select(`#id${context.actLayerId}`).attr("stroke-width").replace('px',''));
         let isOne = context.actLayerId == context.Svg.select('#_antBorder').attr("data-id") ? true : false;//判断是否是同一个图层.....
         context.Svg.select("#_antBorder").attr({'data-id':context.actLayerId});
         context.Svg.select("#_antLine").attr({d:`M${_lineBox.x-_strockWidth/2} ${_lineBox.y-_strockWidth/2}H${_lineBox.x2+_strockWidth/2}V${_lineBox.y2+_strockWidth/2}H${_lineBox.x-_strockWidth/2}Z`});
-        context.Svg.select("#_antLine").attr({ d:_lineBox.path.toString() });
+        // context.Svg.select("#_antLine").attr({ d:_lineBox.path.toString() });
         let _w = 5,_xita = Snap.atan(_lineBox.height/_lineBox.width),_alpha = context._matrix.split().rotate;
         context.actItem.xita = _xita;
-        console.log( _lineBox  );
         // context.Svg.paper.circle(_lineBox.cx,_lineBox.cy,5).attr({fill:`#${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}`,"z-index":0});
-        // context.Svg.paper.circle(_lineBox.cx,_lineBox.cy,_lineBox.r0).attr({ fill:"red"} );
         context.Svg.select("#squareLT").attr({d:`M${_lineBox.x-_w-_strockWidth/2} ${_lineBox.y-_w-_strockWidth/2}h${_w}v${_w}h${-_w}Z`,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y2});
         context.Svg.select("#squareCT").attr({d:`M${_lineBox.x+_lineBox.width/2-_w/2} ${_lineBox.y-_w-_strockWidth/2}h${_w}v${_w}h${-_w}Z`,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y2});
         context.Svg.select("#squareRT").attr({d:`M${_lineBox.x2+_strockWidth/2} ${_lineBox.y-_w-_strockWidth/2}h${_w}v${_w}h${-_w}Z`,"data-id":context.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y2});

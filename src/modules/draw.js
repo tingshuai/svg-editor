@@ -17,7 +17,9 @@ const actions = {
 
 // mutations
 const mutations = {
-
+  getPage(state, getters, rootState, rootGetters){
+    debugger;
+  }
 }
 
 export default {

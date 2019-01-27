@@ -11,7 +11,14 @@ import Snap from "imports-loader?this=>window,fix=>module.exports=0!snapsvg/dist
 import "./css/common.css";
 import "../public/font/iconfont.css";
 import "../public/font/iconfont.js";
+import 'svg.js'
+import 'svg.draggable.js'
+import 'svg.draw.js'
+import 'svg.select.js'
+import 'svg.resize.js'
+import 'svg.select.js/dist/svg.select.min.css'
 Vue.prototype.Snap = Snap;
+
 Vue.config.productionTip = false;
 
 Vue.use(vuescroll, {

@@ -602,6 +602,10 @@
   version "1.1.3"
   resolved "http://registry.npm.taobao.org/@nodelib/fs.stat/download/@nodelib/fs.stat-1.1.3.tgz#2b5a3ab3f918cca48a8c754c08168e3f03eba61b"
 
+"@svgdotjs/svg.js@^3.0.11":
+  version "3.0.11"
+  resolved "https://registry.yarnpkg.com/@svgdotjs/svg.js/-/svg.js-3.0.11.tgz#756e2f9844a27ee0917d341bd6961caf20703f55"
+
 "@types/q@^1.5.1":
   version "1.5.1"
   resolved "http://registry.npm.taobao.org/@types/q/download/@types/q-1.5.1.tgz#48fd98c1561fe718b61733daed46ff115b496e18"
@@ -5771,6 +5775,41 @@ supports-color@^5.1.0, supports-color@^5.3.0, supports-color@^5.4.0, supports-co
   resolved "http://registry.npm.taobao.org/supports-color/download/supports-color-5.5.0.tgz#e2e69a44ac8772f78a1ec0b35b689df6530efc8f"
   dependencies:
     has-flag "^3.0.0"
+
+svg.draggable.js@2.2.2:
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/svg.draggable.js/-/svg.draggable.js-2.2.2.tgz#c514a2f1405efb6f0263e7958f5b68fce50603ba"
+  dependencies:
+    svg.js "^2.0.1"
+
+svg.draw.js@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/svg.draw.js/-/svg.draw.js-2.0.3.tgz#53171a1444070325f409ded97ad5bc806601520a"
+  dependencies:
+    svg.js "2.x.x"
+
+svg.js@2.x.x, svg.js@^2.0.1, svg.js@^2.2.5, svg.js@^2.6.5:
+  version "2.7.1"
+  resolved "https://registry.yarnpkg.com/svg.js/-/svg.js-2.7.1.tgz#eb977ed4737001eab859949b4a398ee1bb79948d"
+
+svg.resize.js@^1.4.2:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/svg.resize.js/-/svg.resize.js-1.4.2.tgz#57afd427fe3e57550c69660546b1cc4cb89ab2be"
+  dependencies:
+    svg.js "^2.6.5"
+    svg.select.js "^2.1.2"
+
+svg.select.js@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/svg.select.js/-/svg.select.js-2.1.2.tgz#e41ce13b1acff43a7441f9f8be87a2319c87be73"
+  dependencies:
+    svg.js "^2.2.5"
+
+svg.select.js@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/svg.select.js/-/svg.select.js-3.0.1.tgz#a4198e359f3825739226415f82176a90ea5cc917"
+  dependencies:
+    svg.js "^2.6.5"
 
 svgo@^1.0.0:
   version "1.1.1"
