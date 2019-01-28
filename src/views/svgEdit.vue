@@ -56,7 +56,7 @@ export default {
     document.addEventListener('mouseup', (e)=> {
       _this.$refs.left.hid();
       _storestate.coordinateUp = [ e.pageX,e.pageY ];// 记下鼠标抬起的坐标.....
-      _storestate.timer = false;
+      _storestate.draw.timer = false;
     })     
     _storestate._matrix = new Snap.Matrix(1,0,0,1,0,0);
   },

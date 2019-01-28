@@ -1,11 +1,11 @@
 <template>
       <section class="left">
         <ul>
-          <li class="item" v-for="(item,index) in barList" :key="index" :title="item.title" @contextmenu.prevent="contextmenu" :data-index="index" :data-item="item" @click="actMe" :class="{ 'act':'' }">
+          <li class="item" v-for="(item,index) in barList" :key="index" :title="item.title" @contextmenu.prevent="contextmenu" :data-index="index" :data-item="item" @mousedown="actMe" :class="{ 'act':'' }">
               <i :class="['icon-' + item.icon,{'act': item.act}]" class="iconfont"></i>
               <span class="triangle" v-if="item.children.length"></span>
               <ul class="contextMenu" v-show="item.showChild && item.children.length != 0">
-                  <li v-for="(it,i) in item.children" :data-parentindex="index" :data-parentItem="item" @click.stop="actChild" :data-index="i" :data-item="it"><i class="block" :style="{'opacity': it.act ? 1 : 0 }"></i><i class="iconfont" :class="['icon-'+it.icon]"></i> <span>{{ it.name }}</span><span class="key">{{ it.key }}</span></li>
+                  <li v-for="(it,i) in item.children" :data-parentindex="index" :data-parentItem="item" @mousedown.stop="actChild" :data-index="i" :data-item="it"><i class="block" :style="{'opacity': it.act ? 1 : 0 }"></i><i class="iconfont" :class="['icon-'+it.icon]"></i> <span>{{ it.name }}</span><span class="key">{{ it.key }}</span></li>
               </ul>
           </li>
           <li></li>

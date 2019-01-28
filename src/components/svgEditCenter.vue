@@ -1,18 +1,19 @@
 <template>
       <section class="center">
         <svg id="svg" class="svg" @mousedown="mousedown" :class="selType" width="80%" height="80%" style="background-color: white;" xmlns="http://www.w3.org/2000/svg" version="1.1">
-          <g id="_antBorder" data-id="" :style="{display:showAnt ? 'block' :'none' }" style="vector-effect:non-scaling-stroke;">
-              <path id="rotateLine" style="stroke:gray;stroke-width:1;vector-effect:non-scaling-stroke"></path>
-              <path class="_controlBar" data-type="rotateBar" id="rotateBar" stroke="black" stroke-width="0" fill="#00bf63" style="font-size:11px;vector-effect:non-scaling-stroke;"></path>
-              <path id="_antLine" stroke="#00bf63" d="" fill="none" style="vector-effect:non-scaling-stroke;stroke-dasharray: 2, 2; stroke-dashoffset: 0;" ></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareLT" data-type="squareLT" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:nw-resize" class="_controlBar" title="缩放"></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareCT" data-type="squareCT" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:n-resize" class="_controlBar" title="缩放"></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareRT" data-type="squareRT" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:ne-resize" class="_controlBar" title="缩放"></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareCR" data-type="squareCR" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:w-resize" class="_controlBar" title="缩放"></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareBR" data-type="squareBR" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:nw-resize" class="_controlBar" title="缩放"></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareBC" data-type="squareBC" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:n-resize" class="_controlBar" title="缩放"></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:ne-resize" class="_controlBar" title="缩放"></path>
-              <path stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="stroke-width: 1; vector-effect:non-scaling-stroke;cursor:w-resize" class="_controlBar" title="缩放"></path>
+          <svg id="canvas" width="100%" height="100%" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>
+          <g id="_antBorder" data-id="" :class="{'showAnt':!showAnt}" style="vector-effect:non-scaling-stroke;">
+            <path id="rotateLine" style="stroke:gray;stroke-width:1;vector-effect:non-scaling-stroke"></path>
+            <circle class="_controlBar" data-type="rotateBar" id="rotateBar" cx="0" cy="0" r="2.5" stroke="black" stroke-width="0" fill="#00bf63" style="font-size:11px;vector-effect:non-scaling-stroke;"/>
+            <path id="_antLine" stroke="#00bf63" d="" fill="none"style="vector-effect:non-scaling-stroke;stroke-dasharray: 2, 2; stroke-dashoffset: 0;" ></path>
+            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareLT" data-type="squareLT" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCT" data-type="squareCT" style="cursor:ns-resize;stroke-width: 1; cursor: ns-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareRT" data-type="squareRT" style="cursor:ne-resize;stroke-width: 1; cursor: ne-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCR" data-type="squareCR" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBR" data-type="squareBR" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBC" data-type="squareBC" style="cursor:nw-resize;stroke-width: 1; cursor: ns-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="cursor:ns-resize;stroke-width: 1; cursor: ne-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
           </g>
         </svg>
         <div class="posiMsg" :style="{'left':dragPosition.x +'px','top':dragPosition.y + 'px'}" v-if="movePosition.show">
@@ -66,7 +67,7 @@ export default {
   },
   computed:{
     coordinateClientMove(){
-      return this.$store.state.itemMoveMsg;
+      return this.$store.state.draw.itemMoveMsg;
     },
     showAnt:{
       get () {
@@ -74,7 +75,7 @@ export default {
       }
     },
     layer(){
-      return this.$store.state.layer
+      return this.$store.state.draw.layer
     },
     _matrix(){
       return this.$store.state._matrix
@@ -82,12 +83,14 @@ export default {
   },
   mounted(){
     Svg = this.Snap('#svg');
-    this.$store.state.Svg = this.Snap("#svg");
-    this.$store.state.Snap = this.Snap;
-    this.$store.state.actItem.matrix = new Snap.Matrix();
-    this.$store.commit("bindFocusEvent");
-    this.$store.commit("bindDrag");
-    this.$store.commit("bindResize");
+    let _storeState = this.$store.state;
+    _storeState.Svg = this.Snap("#svg");
+    _storeState.canvas = this.Snap("#canvas");
+    _storeState.Snap = this.Snap;
+    _storeState.draw.actItem.matrix = new Snap.Matrix();
+    this.$store.dispatch("bindFocusEvent");
+    this.$store.dispatch("bindDrag");
+    this.$store.dispatch("bindResize");
   },
   watch:{
     selType(n,o){
@@ -96,7 +99,7 @@ export default {
       })
       this.$store.state.drawType = n;
       if( n == "xuanze" ){
-        this.$store.commit("bindDrag");
+        this.$store.dispatch("bindDrag");
       }
     },
     layer:{
@@ -107,7 +110,6 @@ export default {
     },
     coordinateMove:{
       handler(n,o){
-        let that = this;
         this.draw({ event:{type:"mousemove"} });
       },
       deep:true
@@ -121,16 +123,16 @@ export default {
     coordinateClientMove:{
       handler(n,o){
         let _storeState = this.$store.state;
-        if( _storeState.itemMoveMsg.state == "move" ){
+        if( _storeState.draw.itemMoveMsg.state == "move" ){
           this.dragPosition.x = n.cx + 10;
           this.dragPosition.y = n.cy - 50;
           this.movePosition.x = Math.abs(n.x);
           this.movePosition.y = Math.abs(n.y);
           n.x > 0 ? this.movePosition.isRight = 'toRight' : this.movePosition.isRight = 'toLeft';
           n.y > 0 ? this.movePosition.isUp = 'toUp' : this.movePosition.isUp = 'toBottom';
-        }else if( _storeState.itemMoveMsg.state == "end" ){
+        }else if( _storeState.draw.itemMoveMsg.state == "end" ){
           this.movePosition.show = false;
-        }else if( _storeState.itemMoveMsg.state == "start"){
+        }else if( _storeState.draw.itemMoveMsg.state == "start"){
           this.movePosition.x = 0;
           this.movePosition.y = 0;
           this.dragPosition.x = n.cx + 10;
@@ -159,7 +161,7 @@ export default {
     mousedown(e){
       let that = this;
       let _storeState = this.$store.state;
-      _storeState.timer = true;//绘画开始.....
+      _storeState.draw.timer = true;//绘画开始.....
       _storeState.coordinateDown = [ e.pageX,e.pageY ];//记录鼠标按下的坐标....
       _storeState.coordinateOffsetDown = [ e.offsetX,e.offsetY ];
       this.draw({ event:{type:"mousedown"} });
@@ -175,29 +177,29 @@ export default {
           break;
         }
         case "xiantiao":{//线段
-          if( _storeState.timer ){
+          if( _storeState.draw.timer ){
             if( obj.event.type == "mousedown" ){
-              this.$store.commit("addLayer");
-              let _line = Svg.paper.path(`M${_storeState.coordinateOffsetDown[0]-5} ${_storeState.coordinateOffsetDown[1]-5}L${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}`).attr({
+              this.$store.dispatch("addLayer");
+              let _line = _storeState.canvas.paper.path(`M${_storeState.coordinateOffsetDown[0]-5} ${_storeState.coordinateOffsetDown[1]-5}L${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}`).attr({
                   stroke: "#000",
-                  strokeWidth: 5,
+                  "stroke-width": 5,
                   class:"svgItem",
                   id:'id'+ _storeState.actLayerId,
                   'data-id':_storeState.actLayerId,
                   'data-type':"line"
               });
-              Svg.paper.g(_line).attr({
+              _storeState.canvas.paper.g(_line).attr({
                 fill:"none",
                   class:"gSvgItem",
                   id:'gid'+_storeState.actLayerId,
                   "data-type":"line"
               })
-              this.$store.commit('bindFocusEvent');//以后聚焦显示蚂蚁线......
+              this.$store.dispatch('bindFocusEvent');//以后聚焦显示蚂蚁线......
             }else if(obj.event.type == "mousemove"){
               Svg.select(`#id${_storeState.actLayerId}`).attr({
                 d:`M${_storeState.coordinateOffsetDown[0]-5} ${_storeState.coordinateOffsetDown[1]-5}L${_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0]} ${_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]}`
               });
-              this.$store.commit('addAnt');//重绘蚂蚁线......
+              this.$store.commit('addAnt',_storeState);//重绘蚂蚁线......
             }
           }
           break;
@@ -209,30 +211,32 @@ export default {
           break;
         }
         case "juxing1":{//矩形工具.....
-          if( _storeState.timer ){
+          if( _storeState.draw.timer ){
             if( obj.event.type == "mousedown" ){
-              this.$store.commit("addLayer");
-              let _rect = Svg.paper.path(`M${_storeState.coordinateOffsetDown[0]+_storeState.actItem.strokeWidth/2} ${_storeState.coordinateOffsetDown[1]+_storeState.actItem.strokeWidth/2}`).attr({
+              this.$store.dispatch("addLayer");
+              let _rect = _storeState.canvas.paper.path(`M${_storeState.coordinateOffsetDown[0]+_storeState.draw.actItem.strokeWidth/2} ${_storeState.coordinateOffsetDown[1]+_storeState.draw.actItem.strokeWidth/2}`).attr({
                   stroke: "#000",
-                  strokeWidth: 10,
+                  "stroke-width": 10,
                   class:"svgItem",
                   "vector-effect":"non-scaling-stroke",
+                  "stroke-miterlimit":1000,
+                  "stroke-linejoin":"miter",
                   id:'id'+ _storeState.actLayerId,
                   'data-id':_storeState.actLayerId,
                   "data-type":"rect"
               });
-              Svg.paper.g(_rect).attr({
+              _storeState.canvas.paper.g(_rect).attr({
                 fill:"none",
                   class:"gSvgItem",
                   id:'gid'+_storeState.actLayerId,
                   "data-type":"rect"
               })
-              this.$store.commit('bindFocusEvent');//以后聚焦显示蚂蚁线......
+              this.$store.dispatch('bindFocusEvent');//以后聚焦显示蚂蚁线......
             }else if(obj.event.type == "mousemove"){
               Svg.select(`#id${_storeState.actLayerId}`).attr({
-                d:`M${_storeState.coordinateOffsetDown[0]+_storeState.actItem.strokeWidth/2} ${_storeState.coordinateOffsetDown[1]+_storeState.actItem.strokeWidth/2}H${_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0]-_storeState.actItem.strokeWidth/2}V${_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]-_storeState.actItem.strokeWidth/2}H${_storeState.coordinateOffsetDown[0]+_storeState.actItem.strokeWidth/2}Z`
+                d:`M${_storeState.coordinateOffsetDown[0]+_storeState.draw.actItem.strokeWidth/2} ${_storeState.coordinateOffsetDown[1]+_storeState.draw.actItem.strokeWidth/2}H${_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0]-_storeState.draw.actItem.strokeWidth/2}V${_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]-_storeState.draw.actItem.strokeWidth/2}H${_storeState.coordinateOffsetDown[0]+_storeState.draw.actItem.strokeWidth/2}Z`
               });
-              this.$store.commit('addAnt');
+              this.$store.commit('addAnt',_storeState);
             }
           }        
           break;
@@ -340,5 +344,8 @@ export default {
 }
 #gAntBorder{
 
+}
+.showAnt{
+  display: none;
 }
 </style>
