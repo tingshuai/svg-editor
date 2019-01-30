@@ -18,6 +18,7 @@ const state = {
     "strokeWidth":5,
     "strokeDasharray":0,
     "strokeDashoffset":0,
+    boxMsg:null,//保存变动时的图形的box信息....
     matrix:null,
   },
   fixedPoint:[],//变换时的定点坐标......
@@ -67,13 +68,14 @@ const actions = {
     let that = this;
     rootState.Svg.selectAll(".gSvgItem").forEach((ele,i,arr)=>{
       let _dataset;
-      let _ele,_gele;
+      let _ele,_gele,_boxMsg;
       ele.drag();
       let onend = (e)=>{
         state.itemMoveMsg.state = "end";
         this.dispatch("resizeEnd",{"e":e,"id":_dataset.id,"type":_dataset.type});
       }
       let onmove = (x,y,cx,cy,e)=>{
+        e.eventType = "resize";
         state.itemMoveMsg.x = x;
         state.itemMoveMsg.y = y;
         state.itemMoveMsg.cx = cx;
@@ -82,7 +84,16 @@ const actions = {
         state.itemMoveMsg.state = "move";
         rootState._matrix = new Snap.Matrix(1,0,0,1,x,y);
         rootState.showAnt = false;
+        // 移动时更新焦点图形的box信息.....
+        state.actItem.boxMsg.x = _boxMsg.x + x;
+        state.actItem.boxMsg.y = _boxMsg.y + y;
+        state.actItem.boxMsg.cx = _boxMsg.cx + x;
+        state.actItem.boxMsg.cy = _boxMsg.cy + y;
+        state.actItem.boxMsg.x2 = _boxMsg.x2 + x;
+        state.actItem.boxMsg.y2 = _boxMsg.y2 + y;
+
         this.dispatch("upLoadSvg");
+        this.dispatch("computeLine",e);
       }
       let onstart = (cx,cy,e)=>{
         state.itemMoveMsg.cx = cx;
@@ -91,6 +102,8 @@ const actions = {
         _dataset = e.srcElement.dataset;
         _ele = rootState.Svg.select(`#id${_dataset.id}`);
         _gele = rootState.Svg.select(`#gid${_dataset.id}`);
+        _boxMsg = _ele.getBBox();
+        this.dispatch("setActItem");
       }
       ele.drag(onmove, onstart, onend);
     });
@@ -114,8 +127,8 @@ const actions = {
       "strokeWidth":5,
       "strokeDasharray":0,
       "strokeDashoffset":0,
-      rotate:0,
-      xita:null,
+      boxMsg:null,
+      rotate:0
     })
   },  
   bindResize({ state, commit, rootState }){
@@ -128,7 +141,6 @@ const actions = {
       let onmove = (x,y,cx,cy,e)=>{
         e.stopPropagation();
         rootState.showAnt = false;
-        
         commit("resize",{"x":x,"y":y,"cx":cx,"cy":cy,"e":e,"type":type,id:_id});
       }
       let onstart = (cx,cy,e)=>{
@@ -159,9 +171,43 @@ const actions = {
       bind(_type);
     })
   },  
-  upLoadSvg({ state, commit, rootState }){
+  upLoadSvg({ state, commit, rootState }){//变相更新svg视图以解决毛边问题....
     rootState.Svg.attr({"font-size":12+Math.random()});
-  }  
+  },
+  setActItem({ state, commit, rootState },obj ){//计算变换 的matrix
+    let actItem = state.layer.filter((item,index,arr)=>{
+      let _box = rootState.Svg.select(`#gid${item.id}`).getBBox();
+      item.boxMsg = _box;
+      if( item.id == rootState.actLayerId ){
+        state.actItem.boxMsg = item.boxMsg;
+        return item;
+      }
+    });
+  },
+  computeLine({ state, commit, rootState },e){//计算 参考线......
+    let _compute = (_m,_n)=>{
+      if( Math.abs( _m.x - _n.x ) >= 0 && Math.abs(_m.x-_n.x) <= 5 ){
+        console.log("a---",Math.abs( _m.x - _n.x ));
+      }else if( Math.abs( _m.y - _n.y ) >= 0 && Math.abs(_m.y-_n.y) <= 5 ){
+        console.log("b---",Math.abs( _m.y - _n.y ));
+      }
+    }
+    state.layer.map((val,index,arr)=>{
+      if( val.id != rootState.actLayerId ){
+        _compute({x:state.actItem.boxMsg.x,y:state.actItem.boxMsg.y},{x:val.boxMsg.x,y:val.boxMsg.y});
+        _compute({x:state.actItem.boxMsg.x2,y:state.actItem.boxMsg.y2},{x:val.boxMsg.x,y:val.boxMsg.y});
+        _compute({x:state.actItem.boxMsg.cx,y:state.actItem.boxMsg.cy},{x:val.boxMsg.x,y:val.boxMsg.y});
+
+        _compute({x:state.actItem.boxMsg.x,y:state.actItem.boxMsg.y},{x:val.boxMsg.x,y:val.boxMsg.y});
+        _compute({x:state.actItem.boxMsg.x2,y:state.actItem.boxMsg.y2},{x:val.boxMsg.x,y:val.boxMsg.y});
+        _compute({x:state.actItem.boxMsg.cx,y:state.actItem.boxMsg.cy},{x:val.boxMsg.x,y:val.boxMsg.y});
+
+        _compute({x:state.actItem.boxMsg.x,y:state.actItem.boxMsg.y},{x:val.boxMsg.cx,y:val.boxMsg.cy});
+        _compute({x:state.actItem.boxMsg.x2,y:state.actItem.boxMsg.y2},{x:val.boxMsg.cx,y:val.boxMsg.cy});
+        _compute({x:state.actItem.boxMsg.cx,y:state.actItem.boxMsg.cy},{x:val.boxMsg.cx,y:val.boxMsg.cy});
+      }
+    })
+  }
 }
 
 // mutations
@@ -175,92 +221,54 @@ const mutations = {
     context.itemMoveMsg.x = obj.x;
     context.itemMoveMsg.y = obj.y;
     rootState._matrix = new Snap.Matrix();
-
+    let _rateX,_rateY,_point=[];
     if( obj.type == "squareLT" ){
-        if( obj.e.altKey && !obj.e.shiftKey ){ 
-          rootState._matrix.scale((_box.width-obj.x)/_box.width,(_box.height-obj.y)/_box.height,_box.cx,_box.cy);
-        }else if( obj.e.shiftKey && !obj.e.altKey){
-          rootState._matrix.scale((_box.width-obj.x)/_box.width,(_box.width-obj.x)/_box.width,context.fixedPoint[0],context.fixedPoint[1]);
-        }else if( obj.e.altKey && obj.e.shiftKey ){
-          rootState._matrix.scale((_box.width-obj.x)/_box.width,(_box.width-obj.x)/_box.width,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]-_box.height/2);
-        }else{
-          rootState._matrix.scale((_box.width-obj.x)/_box.width,(_box.height-obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
-        }
-        _ele.transform(rootState._matrix);
-    }else if( obj.type == "squareCT" || obj.type == "lineTop" ){
-        if( obj.e.altKey ){
-          rootState._matrix.scale(1,(_box.height-obj.y)/_box.height,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]-_box.height/2);
-        }else{
-          rootState._matrix.scale(1,(_box.height-obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
-        }
-        _ele.transform(rootState._matrix).attr({"vector-effect":"non-scaling-stroke"});
-    }else if( obj.type == "squareRT" ){
-      if( obj.e.altKey && !obj.e.shiftKey ){
-        // rootState.Svg.paper.circle(_box.cx,_box.cy,5).attr({ fill:"red"} );
-        rootState._matrix.scale((_box.width+obj.x)/_box.width,(_box.height-obj.y)/_box.height,_box.cx,_box.cy);
-      }else if( obj.e.shiftKey && !obj.e.altKey){
-        rootState._matrix.scale((_box.width+obj.x)/_box.width,(_box.width+obj.x)/_box.width,context.fixedPoint[0],context.fixedPoint[1]);
-      }else if( obj.e.altKey && obj.e.shiftKey ){
-        rootState._matrix.scale((_box.width+obj.x)/_box.width,(_box.width+obj.x)/_box.width,_box.cx,_box.cy);
-      }else{
-        rootState._matrix.scale((_box.width+obj.x)/_box.width,(_box.height-obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
-      }
-      _ele.transform(rootState._matrix).attr({"vector-effect":"non-scaling-stroke"});
-
-    }else if( obj.type == "squareCR" || obj.type == "lineRight" ){
-      if( obj.e.altKey ){
-        rootState._matrix.scale((_box.width+obj.x)/_box.width,1,context.fixedPoint[0]+_box.width/2,context.fixedPoint[1]);
-      }else{
-        rootState._matrix.scale((_box.width+obj.x)/_box.width,1,context.fixedPoint[0],context.fixedPoint[1]);
-      }
-        _ele.transform(rootState._matrix).attr({"vector-effect":"non-scaling-stroke"});
+      _rateX = (_box.width-obj.x)/_box.width;
+      _rateY = (_box.height-obj.y)/_box.height;
+    }else if( obj.type == "squareBL" ){
+      _rateX = (_box.width-obj.x)/_box.width;
+      _rateY = (_box.height+obj.y)/_box.height;
     }else if( obj.type == "squareBR" ){
-      if( obj.e.altKey && !obj.e.shiftKey ){
-        rootState._matrix.scale((_box.width+obj.x)/_box.width,(_box.height+obj.y)/_box.height,context.fixedPoint[0]+_box.width/2,context.fixedPoint[1]+_box.height/2);
-      }else if( obj.e.shiftKey && !obj.e.altKey){
-        rootState._matrix.scale((_box.width+obj.x)/_box.width,(_box.width+obj.x)/_box.width,context.fixedPoint[0],context.fixedPoint[1]);
-      }else if( obj.e.altKey && obj.e.shiftKey ){
-        rootState._matrix.scale((_box.width+obj.x)/_box.width,(_box.width+obj.x)/_box.width,context.fixedPoint[0]+_box.width/2,context.fixedPoint[1]+_box.height/2);
-      }else{
-        rootState._matrix.scale((_box.width+obj.x)/_box.width,(_box.height+obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
-      }
-      _ele.transform(rootState._matrix).attr({"vector-effect":"non-scaling-stroke"});
-    }else if( obj.type == "squareBC" || obj.type == "lineBottom" ){
-      if( obj.e.altKey ){
-        rootState._matrix.scale(1,(_box.height+obj.y)/_box.height,context.fixedPoint[0]+_box.width/2,context.fixedPoint[1]+_box.height/2);
-      }else{
-        rootState._matrix.scale(1,(_box.height+obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
-      }
-        _ele.transform(rootState._matrix).attr({"vector-effect":"non-scaling-stroke"});
-    }else if( obj.type == "squareBL"){
-      if( obj.e.altKey && !obj.e.shiftKey ){
-        rootState._matrix.scale((_box.width+obj.x)/_box.width,(_box.height-obj.y)/_box.height,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]+_box.height/2);
-      }else if( obj.e.shiftKey && !obj.e.altKey){
-        rootState._matrix.scale((_box.width-obj.x)/_box.width,(_box.width-obj.x)/_box.width,context.fixedPoint[0],context.fixedPoint[1]);
-      }else if( obj.e.altKey && obj.e.shiftKey ){
-        rootState._matrix.scale((_box.width-obj.x)/_box.width,(_box.width-obj.x)/_box.width,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]+_box.height/2);
-      }else{
-        rootState._matrix.scale((_box.width-obj.x)/_box.width,(_box.height+obj.y)/_box.height,context.fixedPoint[0],context.fixedPoint[1]);
-      }    
-        _ele.transform(rootState._matrix).attr({"vector-effect":"non-scaling-stroke"});
-    }else if( obj.type == "squareCL" || obj.type == "lineLeft" ){
-      if( obj.e.altKey ){
-        rootState._matrix.scale((_box.width-obj.x)/_box.width,1,context.fixedPoint[0]-_box.width/2,context.fixedPoint[1]);
-      }else{
-        rootState._matrix.scale((_box.width-obj.x)/_box.width,1,context.fixedPoint[0],context.fixedPoint[1]);
-      }
-        _ele.transform(rootState._matrix).attr({"vector-effect":"non-scaling-stroke"});
-    }else if( obj.type == "rotateBar" ){
+      _rateY = (_box.height+obj.y)/_box.height;
+      _rateX = (_box.width+obj.x)/_box.width;
+    }else if( obj.type == "squareRT" ){
+      _rateX = (_box.width+obj.x)/_box.width;
+      _rateY = (_box.height-obj.y)/_box.height;
+    }else if( obj.type == "squareCT" ){
+      _rateX = 1;
+      _rateY = (_box.height-obj.y)/_box.height;
+    }else if( obj.type == "squareCR" ){
+      _rateY = 1;
+      _rateX = (_box.width+obj.x)/_box.width; 
+    }else if( obj.type == "squareBC" ){
+      _rateX = 1;
+      _rateY = (_box.height+obj.y)/_box.height;
+    }else if( obj.type == "squareCL" ){
+      _rateY = 1;
+      _rateX = (_box.width-obj.x)/_box.width;
+    }
+    if( obj.e.altKey && !obj.e.shiftKey ){//只按下alt键
+      _point[0] = _box.cx, _point[1] = _box.cy;
+    }else if( obj.e.shiftKey && !obj.e.altKey &&  _rateX != 1 && _rateY != 1 ){//按下shift
+      _rateY = _rateX;
+    }else if( obj.e.altKey && obj.e.shiftKey ){//都按下
+      _point[0] = _box.cx, _point[1] = _box.cy; _rateY == 1 ? _rateY = _rateX : _rateX = _rateY;
+    }else{//都没按下
+      _point = context.fixedPoint;
+    }
+    
+    if( obj.type == "rotateBar" ){//旋转....
       rootState._matrix = new Snap.Matrix();
       let _rotate = Snap.angle( context.fixedPoint[0],context.fixedPoint[1], obj.e.offsetX,obj.e.offsetY )-180;
       rootState._matrix.rotate( _rotate, context.fixedPoint[0],context.fixedPoint[1] );
-      // _antBorder.transform( rootState._matrix );
       _ele.transform( rootState._matrix );
-      
-      let _lineBox = rootState.Svg.select(`#id${context.actLayerId}`).getBBox();
-      rootState.Svg.select("#_antLine").attr({ d:_lineBox.path.toString() });         
+      rootState.Svg.select("#_antLine").attr({ d:_box.path.toString() });         
       // _ele.transform( context.actItem.matrix.invert().add(rootState._matrix) );
+    }else{
+      rootState._matrix.scale(_rateX,_rateY,_point[0],_point[1]);
+      _ele.transform(rootState._matrix).attr({"vector-effect":"non-scaling-stroke"});
     }
+    // rootState.Svg.select("#demo_circle").attr({cx:`${_box.x}`,cy:`${_box.y}`,r:`${_box.r0}`,fill:`#${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}`})
     this.dispatch("upLoadSvg");
   },
   addAnt(context){//重绘控制点.....
@@ -283,8 +291,6 @@ const mutations = {
 
       rootState.Svg.select("#rotateLine").attr({d:`M${_lineBox.x2+_strockWidth/2} ${_lineBox.y+_strockWidth/2+_lineBox.height/2-_strockWidth/2}L${_lineBox.x2+_strockWidth/2 + 30} ${_lineBox.y+_strockWidth/2+_lineBox.height/2-_strockWidth/2}`});
       rootState.Svg.select("#rotateBar").attr({cx:_lineBox.x2+_strockWidth/2 + 30,cy:_lineBox.y+_strockWidth/2+_lineBox.height/2-_strockWidth/2,r:5,"data-fixedpoint_x":_lineBox.cx,"data-fixedpoint_y":_lineBox.cy,"data-id":rootState.actLayerId});
-      // rootState.Svg.paper.circle(_lineBox.cx,_lineBox.cy,5).attr({fill:`#${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}`,"z-index":0});
-
   }
 }
 

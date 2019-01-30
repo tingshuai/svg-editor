@@ -15,6 +15,14 @@
             <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="cursor:ns-resize;stroke-width: 1; cursor: ne-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
             <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
           </g>
+          <g id="referenceLine">
+            <line class="referenceLine_top" x1="0" y1="0" x2="0" y2="0" stroke="orange" stroke-dasharray="5 5"></line>
+            <line class="referenceLine_right" x1="0" y1="0" x2="0" y2="0" stroke="orange" stroke-dasharray="5 5"></line>
+            <line class="referenceLine_bottom" x1="0" y1="0" x2="0" y2="0" stroke="orange" stroke-dasharray="5 5"></line>
+            <line class="referenceLine_left" x1="0" y1="0" x2="0" y2="0" stroke="orange" stroke-dasharray="5 5"></line>
+            <line class="referenceLine_h" x1="0" y1="0" x2="0" y2="0" stroke="orange" stroke-dasharray="5 5"></line>
+            <line class="referenceLine_v" x1="0" y1="0" x2="0" y2="0" stroke="orange" stroke-dasharray="5 5"></line>
+          </g>
         </svg>
         <div class="posiMsg" :style="{'left':dragPosition.x +'px','top':dragPosition.y + 'px'}" v-if="movePosition.show">
           <section class="part part1">
@@ -91,6 +99,7 @@ export default {
     this.$store.dispatch("bindFocusEvent");
     this.$store.dispatch("bindDrag");
     this.$store.dispatch("bindResize");
+    // _storeState.Svg.paper.circle(0,0,5).attr({id:'demo_circle'});
   },
   watch:{
     selType(n,o){
@@ -219,7 +228,7 @@ export default {
                   "stroke-width": 10,
                   class:"svgItem",
                   "vector-effect":"non-scaling-stroke",
-                  "stroke-miterlimit":1000,
+                  "stroke-miterlimit":10,
                   "stroke-linejoin":"miter",
                   id:'id'+ _storeState.actLayerId,
                   'data-id':_storeState.actLayerId,
