@@ -1,3 +1,5 @@
+import { joinSafe } from "upath";
+
 // import shop from '../../api/shop'
 
 // initial state
@@ -20,6 +22,7 @@ const state = {
     "strokeDashoffset":0,
     boxMsg:null,//保存变动时的图形的box信息....
     matrix:null,
+    consBoxMsg:null
   },
   fixedPoint:[],//变换时的定点坐标......
 } 
@@ -103,6 +106,7 @@ const actions = {
         _ele = rootState.Svg.select(`#id${_dataset.id}`);
         _gele = rootState.Svg.select(`#gid${_dataset.id}`);
         _boxMsg = _ele.getBBox();
+        state.actItem.consBoxMsg = _boxMsg;
         this.dispatch("setActItem");
       }
       ele.drag(onmove, onstart, onend);
@@ -185,26 +189,45 @@ const actions = {
     });
   },
   computeLine({ state, commit, rootState },e){//计算 参考线......
+    let _gele = rootState.Svg.select(`#gid${rootState.actLayerId}`);
+    let _gTrans = _gele.attr("transform");
+    let _consBoxMsg = state.actItem.consBoxMsg;//获取保存的boxMsg常量..
+    let setMe = ()=>{
+      _gele.transform( rootState._matrix );
+    }
+    let setLine = (_m,_n,type)=>{
+      let isTop = _m.cy - _n.cy > 0 ? false : true;
+      let isLeft = _m.cx - _n.cx > 0 ? true : false;
+      let _minX = Math.abs(_m.cx - _n.cx);
+      // rootState.Svg.paper.circle(_consBoxMsg.cx,_consBoxMsg.cy,5).attr({fill:"red"});
+      if( type == "xBorderOuter" ){
+        if( isLeft ){
+          rootState._matrix.e = Math.abs(_m.cx-_consBoxMsg.cx)-(_m.w+_consBoxMsg.w)/2;
+          setMe();
+        }
+      }
+    }
     let _compute = (_m,_n)=>{
-      if( Math.abs( _m.x - _n.x ) >= 0 && Math.abs(_m.x-_n.x) <= 5 ){
-        console.log("a---",Math.abs( _m.x - _n.x ));
-      }else if( Math.abs( _m.y - _n.y ) >= 0 && Math.abs(_m.y-_n.y) <= 5 ){
-        console.log("b---",Math.abs( _m.y - _n.y ));
+      console.log("++++++++++++++++++++++++++",Math.abs( _m.cx - _n.cx ) - ( _m.w+_n.w )/2,_m);
+      console.log("+++++++++++",document.getElementById(`gid${rootState.actLayerId}`).getBoundingClientRect());
+      
+      if( Math.abs( _m.cx - _n.cx ) > ( _m.w+_n.w)/2 + 5 ){//x轴外侧..
+        console.log("x轴外侧..",Math.abs( _m.cx - _n.cx ));
+      }else if( Math.abs( _m.cx - _n.cx ) >= ( _m.w+_n.w )/2 - 5 && Math.abs( _m.cx - _n.cx ) <= ( _m.w+_n.w)/2 + 5 ){//x轴侧边外相交
+        console.log("x轴侧边外相交",Math.abs( _m.cx - _n.cx ));
+        setLine(_m,_n,"xBorderOuter");
+      }else if( Math.abs( _m.cx - _n.cx ) >= _m.w/2 - 5 && Math.abs( _m.cx - _n.cx ) <= _m.w/2 + 5 ){//焦点元素的中心点与边相错
+        console.log("焦点元素的中心点与边相错",Math.abs( _m.cx - _n.cx ));
+      }else if( Math.abs( _m.cx - _n.cx ) >= _n.w/2 - 5 && Math.abs( _m.cx - _n.cx ) <= _n.w/2 + 5 ){//目标元素的中心点与边相错..
+        console.log("目标元素的中心点与边相错..",Math.abs( _m.cx - _n.cx ));
+      }else if(Math.abs( _m.cx - _n.cx ) >= Math.abs( _m.w-_n.w)/2 - 5 && Math.abs( _m.cx - _n.cx ) <= Math.abs( _m.w-_n.w)/2 + 5){//x轴侧边内相交
+        console.log("x轴侧边内相交",Math.abs( _m.cx - _n.cx ));
       }
     }
     state.layer.map((val,index,arr)=>{
       if( val.id != rootState.actLayerId ){
-        _compute({x:state.actItem.boxMsg.x,y:state.actItem.boxMsg.y},{x:val.boxMsg.x,y:val.boxMsg.y});
-        _compute({x:state.actItem.boxMsg.x2,y:state.actItem.boxMsg.y2},{x:val.boxMsg.x,y:val.boxMsg.y});
-        _compute({x:state.actItem.boxMsg.cx,y:state.actItem.boxMsg.cy},{x:val.boxMsg.x,y:val.boxMsg.y});
-
-        _compute({x:state.actItem.boxMsg.x,y:state.actItem.boxMsg.y},{x:val.boxMsg.x,y:val.boxMsg.y});
-        _compute({x:state.actItem.boxMsg.x2,y:state.actItem.boxMsg.y2},{x:val.boxMsg.x,y:val.boxMsg.y});
-        _compute({x:state.actItem.boxMsg.cx,y:state.actItem.boxMsg.cy},{x:val.boxMsg.x,y:val.boxMsg.y});
-
-        _compute({x:state.actItem.boxMsg.x,y:state.actItem.boxMsg.y},{x:val.boxMsg.cx,y:val.boxMsg.cy});
-        _compute({x:state.actItem.boxMsg.x2,y:state.actItem.boxMsg.y2},{x:val.boxMsg.cx,y:val.boxMsg.cy});
-        _compute({x:state.actItem.boxMsg.cx,y:state.actItem.boxMsg.cy},{x:val.boxMsg.cx,y:val.boxMsg.cy});
+        // rootState.Svg.paper.circle(val.boxMsg.cx,val.bo.cy,5).attr({fill:"red"});
+        _compute( val.boxMsg , state.actItem.boxMsg );
       }
     })
   }

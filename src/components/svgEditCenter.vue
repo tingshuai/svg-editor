@@ -171,8 +171,8 @@ export default {
       let that = this;
       let _storeState = this.$store.state;
       _storeState.draw.timer = true;//绘画开始.....
-      _storeState.coordinateDown = [ e.pageX,e.pageY ];//记录鼠标按下的坐标....
-      _storeState.coordinateOffsetDown = [ e.offsetX,e.offsetY ];
+      _storeState.coordinateDown = [ e.pageX,e.pageY ,e];//记录鼠标按下的坐标....
+      _storeState.coordinateOffsetDown = [ e.offsetX,e.offsetY ,e];
       this.draw({ event:{type:"mousedown"} });
       e.preventDefault();
     },
