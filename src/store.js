@@ -21,6 +21,10 @@ export default new Vuex.Store({
     drawType:"xuanze",//画笔类型.....
     showAnt:false,//是否显示蚂蚁线.....
     _matrix:null,//变换矩阵....
+    defaultConfig:{
+      strokeWidth:5,
+      stroke:"#000"
+    }
   },
   mutations: {
 

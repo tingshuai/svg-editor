@@ -190,8 +190,8 @@ export default {
             if( obj.event.type == "mousedown" ){
               this.$store.dispatch("addLayer");
               let _line = _storeState.canvas.paper.path(`M${_storeState.coordinateOffsetDown[0]-5} ${_storeState.coordinateOffsetDown[1]-5}L${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}`).attr({
-                  stroke: "#000",
-                  "stroke-width": 5,
+                  stroke: _storeState.defaultConfig.stroke,
+                  "stroke-width": _storeState.defaultConfig.strokeWidth,
                   class:"svgItem",
                   id:'id'+ _storeState.actLayerId,
                   'data-id':_storeState.actLayerId,
@@ -224,8 +224,8 @@ export default {
             if( obj.event.type == "mousedown" ){
               this.$store.dispatch("addLayer");
               let _rect = _storeState.canvas.paper.path(`M${_storeState.coordinateOffsetDown[0]+_storeState.draw.actItem.strokeWidth/2} ${_storeState.coordinateOffsetDown[1]+_storeState.draw.actItem.strokeWidth/2}`).attr({
-                  stroke: "#000",
-                  "stroke-width": 10,
+                  stroke: _storeState.defaultConfig.stroke,
+                  "stroke-width": _storeState.defaultConfig.strokeWidth,
                   class:"svgItem",
                   "vector-effect":"non-scaling-stroke",
                   "stroke-miterlimit":10,

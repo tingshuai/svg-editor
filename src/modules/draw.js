@@ -72,6 +72,8 @@ const actions = {
     rootState.Svg.selectAll(".gSvgItem").forEach((ele,i,arr)=>{
       let _dataset;
       let _ele,_gele,_boxMsg;
+      console.log(ele);
+      
       ele.drag();
       let onend = (e)=>{
         state.itemMoveMsg.state = "end";
@@ -88,15 +90,17 @@ const actions = {
         rootState._matrix = new Snap.Matrix(1,0,0,1,x,y);
         rootState.showAnt = false;
         // 移动时更新焦点图形的box信息.....
-        state.actItem.boxMsg.x = _boxMsg.x + x;
-        state.actItem.boxMsg.y = _boxMsg.y + y;
-        state.actItem.boxMsg.cx = _boxMsg.cx + x;
-        state.actItem.boxMsg.cy = _boxMsg.cy + y;
-        state.actItem.boxMsg.x2 = _boxMsg.x2 + x;
-        state.actItem.boxMsg.y2 = _boxMsg.y2 + y;
+        state.actItem.boxMsg.x = state.actItem.consBoxMsg.x + x;
+        state.actItem.boxMsg.y = state.actItem.consBoxMsg.y + y;
+        state.actItem.boxMsg.cx = state.actItem.consBoxMsg.cx + x;
+        state.actItem.boxMsg.cy = state.actItem.consBoxMsg.cy + y;
+        state.actItem.boxMsg.x2 = state.actItem.consBoxMsg.x2 + x;
+        state.actItem.boxMsg.y2 = state.actItem.consBoxMsg.y2 + y;
 
         this.dispatch("upLoadSvg");
-        this.dispatch("computeLine",e);
+        if(!e.ctrlKey){//当ctrl键按下时不计算对齐标记线....
+          this.dispatch("computeLine",e);
+        }
       }
       let onstart = (cx,cy,e)=>{
         state.itemMoveMsg.cx = cx;
@@ -105,11 +109,16 @@ const actions = {
         _dataset = e.srcElement.dataset;
         _ele = rootState.Svg.select(`#id${_dataset.id}`);
         _gele = rootState.Svg.select(`#gid${_dataset.id}`);
-        _boxMsg = _ele.getBBox();
-        state.actItem.consBoxMsg = _boxMsg;
-        this.dispatch("setActItem");
+        // SVG.get(`id${_dataset.id}`).draggable();
+        commit("setActItem");
       }
       ele.drag(onmove, onstart, onend);
+
+
+
+
+
+
     });
     rootState.Svg.selectAll(".svgItem").forEach((ele,i,arr)=>{
       ele.hover((e)=>{
@@ -127,8 +136,8 @@ const actions = {
       id:rootState.actLayerId,
       matrix:new Snap.Matrix(),
       "fill":"none",
-      "stroke":"black",
-      "strokeWidth":5,
+      "stroke":rootState.defaultConfig.stroke,
+      "strokeWidth":rootState.defaultConfig.strokeWidth,
       "strokeDasharray":0,
       "strokeDashoffset":0,
       boxMsg:null,
@@ -178,95 +187,36 @@ const actions = {
   upLoadSvg({ state, commit, rootState }){//变相更新svg视图以解决毛边问题....
     rootState.Svg.attr({"font-size":12+Math.random()});
   },
-  setActItem({ state, commit, rootState },obj ){//计算变换 的matrix
-    let actItem = state.layer.filter((item,index,arr)=>{
-      let _box = rootState.Svg.select(`#gid${item.id}`).getBBox();
-      item.boxMsg = _box;
-      if( item.id == rootState.actLayerId ){
-        state.actItem.boxMsg = item.boxMsg;
-        return item;
-      }
-    });
-  },
-  computeLine({ state, commit, rootState },e){//计算 参考线......
+  computeLine({ state, commit, rootState },e){//计算 对齐标记线......
     let _gele = rootState.Svg.select(`#gid${rootState.actLayerId}`);
-    let _gTrans = _gele.attr("transform");
     let _consBoxMsg = state.actItem.consBoxMsg;//获取保存的boxMsg常量..
-
+    let _pointX = ["x","cx","x2"];
+    let _pointY = ["y","cy","y2"];
+    let _threshold = 5;
     let setMe = ()=>{
       _gele.transform( rootState._matrix );
     }
-    let setLine = (_m,_n,type,val,actor)=>{
-      let isTop = _m.cy - _n.cy > 0 ? false : true;
-      let isLeft = _m.cx - _n.cx > 0 ? true : false;
-      let _minX = Math.abs(_m.cx - _n.cx);
-      if( type == "xBorderOuter" ){//x轴侧边外相交
-        if( isLeft ){
-          rootState._matrix.e = Math.abs(_m.cx-_consBoxMsg.cx)-(_m.w+_consBoxMsg.w+val.strokeWidth+actor.strokeWidth)/2;
-          setMe();
-        }else{
-          rootState._matrix.e = Math.abs(_m.x2-_consBoxMsg.x2)+_n.width+actor.strokeWidth;
-          setMe();                
-        }
-      }else if( type == "xBorderCenter" ){//焦点元素的中心点与边相错...
-        if( isLeft ){
-          rootState._matrix.e = Math.abs(_m.cx-_consBoxMsg.cx)-(_m.w+actor.strokeWidth)/2;
-          setMe();
-        }else{
-          rootState._matrix.e = Math.abs(_m.x2-_consBoxMsg.x2)+(_n.width+actor.strokeWidth)/2;
-          setMe();
-        }
-      }else if( type == "xBorderTarget" ){//目标元素的中心点与边相错
-        if( isLeft ){
-          rootState._matrix.e = Math.abs(_m.cx-_consBoxMsg.cx)-(_consBoxMsg.w+actor.strokeWidth)/2;
-          setMe();
-        }else{
-          rootState._matrix.e = Math.abs(_m.cx-_consBoxMsg.cx)+(_consBoxMsg.w+actor.strokeWidth)/2;
-          setMe();          
-        }
-      }else if( type == "xBorderInner" ){//x轴侧边内相交......
-        if( isLeft ){
-          rootState._matrix.e = Math.abs(_m.x-_consBoxMsg.x)+(val.strokeWidth+actor.strokeWidth)/2;
-          setMe();
-        }else{
-          rootState._matrix.e = Math.abs(_m.x2-_consBoxMsg.x2)-(val.strokeWidth+actor.strokeWidth)/2;
-          setMe();          
-        }
-      }else if( type == "xCenter" ){
-        rootState._matrix.e = Math.abs(_m.cx-_consBoxMsg.cx);
-        setMe();
-      }
-    }
-    let _compute = (_m,_n,val,actor)=>{
-      let _rect = document.getElementById(`gid${rootState.actLayerId}`).getBoundingClientRect();
-      // rootState.Svg.paper.circle(_n.x+_rect.width,_n.y+_rect.height,1).attr({fill:"red"});
-      let _threshold = 5;
-      if( Math.abs( _m.cx - _n.cx ) > ( _m.w+_n.w+val.strokeWidth+actor.strokeWidth)/2 + _threshold ){//x轴外侧..
-        console.log("x轴外侧..",Math.abs( _m.cx - _n.cx ));
-      }else if( Math.abs( _m.cx - _n.cx ) >= ( _m.w+_n.w+val.strokeWidth+actor.strokeWidth)/2 - _threshold && Math.abs( _m.cx - _n.cx ) <= ( _m.w+_n.w+val.strokeWidth+actor.strokeWidth)/2 + _threshold ){//x轴侧边外相交
-        console.log("x轴侧边外相交",Math.abs( _m.cx - _n.cx ));
-        setLine(_m,_n,"xBorderOuter",val,actor);
-      }else if( Math.abs( _m.cx - _n.cx ) >= (_m.w+val.strokeWidth)/2 - _threshold && Math.abs( _m.cx - _n.cx ) <= (_m.w+val.strokeWidth)/2 + _threshold ){//焦点元素的中心点与边相错
-        console.log("焦点元素的中心点与边相错",Math.abs( _m.cx - _n.cx ));
-        setLine(_m,_n,"xBorderCenter",val,actor);
-      }else if( Math.abs( _m.cx - _n.cx ) >= (_n.w+actor.strokeWidth)/2 - _threshold && Math.abs( _m.cx - _n.cx ) <= (_n.w+actor.strokeWidth)/2 + _threshold ){//目标元素的中心点与边相错..
-        console.log("目标元素的中心点与边相错..",Math.abs( _m.cx - _n.cx ));
-        setLine(_m,_n,"xBorderTarget",val,actor);
-      }else if(Math.abs( _m.cx - _n.cx ) >= Math.abs( (_m.w+val.strokeWidth)-(_n.w+actor.strokeWidth))/2 - _threshold && Math.abs( _m.cx - _n.cx ) <= Math.abs( (_m.w+val.strokeWidth)-(_n.w+actor.strokeWidth))/2 + _threshold){//x轴侧边内相交
-        console.log("x轴侧边内相交",Math.abs( _m.cx - _n.cx ));
-        setLine(_m,_n,"xBorderInner",val,actor);
-      }else if( _m.cx - _n.cx >= -_threshold && _m.cx - _n.cx <= _threshold ){
-        setLine(_m,_n,"xCenter",val,actor);
-        console.log("x轴中心点相交",Math.abs( _m.cx - _n.cx ));
-      }
+    let _compute = (_m,_n)=>{
+      _pointX.forEach((val,i,arr)=>{
+        _pointX.forEach((value,ii,array)=>{
+          if( _n[val] >= _m[value] - _threshold && _n[val] <= _m[value] + _threshold ){
+            rootState._matrix.e = _m[value]-_consBoxMsg[val];
+            setMe();          
+          }
+        })
+      })
+      _pointY.forEach((val,i,arr)=>{
+        _pointY.forEach((value,ii,array)=>{
+          if( _n[val] >= _m[value] - _threshold && _n[val] <= _m[value] + _threshold ){
+            rootState._matrix.f = _m[value]-_consBoxMsg[val];
+            setMe();          
+          }
+        })
+      })
     }
     state.layer.map((val,index,arr)=>{
-      val.boxMsg.w = val.boxMsg.w+val.strokeWidth;
-      val.boxMsg.h = val.boxMsg.h+val.strokeWidth;
-      state.actItem.boxMsg.w = state.actItem.boxMsg.w+state.actItem.strokeWidth;
-      state.actItem.boxMsg.h = state.actItem.boxMsg.h+state.actItem.strokeWidth;
       if( val.id != rootState.actLayerId ){
-        _compute( val.boxMsg , state.actItem.boxMsg ,val,state.actItem);
+        _compute( val.boxMsg,state.actItem.boxMsg );
       }
     })
   }
@@ -274,6 +224,26 @@ const actions = {
 
 // mutations
 const mutations = {
+  setActItem(context){//计算变换 的matrix
+    let rootState = this.getters.rootState;
+    return context.layer.filter((item,index,arr)=>{
+      let _box = rootState.Svg.select(`#id${item.id}`).getBBox();
+      item.boxMsg = _box;
+      item.boxMsg.x = _box.x - item.strokeWidth/2;
+      item.boxMsg.y = _box.y - item.strokeWidth/2;
+      item.boxMsg.x2 = _box.x2 + item.strokeWidth/2;
+      item.boxMsg.y2 = _box.y2 + item.strokeWidth/2;
+      item.boxMsg.w = _box.width + item.strokeWidth;
+      item.boxMsg.h = _box.height + item.strokeWidth;
+      if( item.id == rootState.actLayerId ){
+        context.actItem.boxMsg = item.boxMsg;
+        state.actItem.consBoxMsg = JSON.parse(JSON.stringify( item.boxMsg ));
+        return item.boxMsg;
+      }else{
+        rootState.Svg.paper.circle(item.boxMsg.cx,item.boxMsg.cy,1).attr({fill:"red"});
+      }
+    });
+  },  
   resize(context,obj){//开始变换....
     let rootState = this.getters.rootState;
     let _ele = rootState.Svg.select(`#id${obj.id}`);

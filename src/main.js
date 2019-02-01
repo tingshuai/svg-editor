@@ -13,10 +13,10 @@ import "../public/font/iconfont.css";
 import "../public/font/iconfont.js";
 import 'svg.js'
 import 'svg.draggable.js'
-import 'svg.draw.js'
-import 'svg.select.js'
-import 'svg.resize.js'
-import 'svg.select.js/dist/svg.select.min.css'
+// import 'svg.draw.js'
+// import 'svg.select.js'
+// import 'svg.resize.js'
+// import 'svg.select.js/dist/svg.select.min.css'
 Vue.prototype.Snap = Snap;
 
 Vue.config.productionTip = false;
