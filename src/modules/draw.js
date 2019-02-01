@@ -134,7 +134,7 @@ const actions = {
       boxMsg:null,
       rotate:0
     })
-  },  
+  },
   bindResize({ state, commit, rootState }){
     let bind = (type)=>{
       let _id = null;
@@ -192,42 +192,81 @@ const actions = {
     let _gele = rootState.Svg.select(`#gid${rootState.actLayerId}`);
     let _gTrans = _gele.attr("transform");
     let _consBoxMsg = state.actItem.consBoxMsg;//获取保存的boxMsg常量..
+
     let setMe = ()=>{
       _gele.transform( rootState._matrix );
     }
-    let setLine = (_m,_n,type)=>{
+    let setLine = (_m,_n,type,val,actor)=>{
       let isTop = _m.cy - _n.cy > 0 ? false : true;
       let isLeft = _m.cx - _n.cx > 0 ? true : false;
       let _minX = Math.abs(_m.cx - _n.cx);
-      // rootState.Svg.paper.circle(_consBoxMsg.cx,_consBoxMsg.cy,5).attr({fill:"red"});
-      if( type == "xBorderOuter" ){
+      if( type == "xBorderOuter" ){//x轴侧边外相交
         if( isLeft ){
-          rootState._matrix.e = Math.abs(_m.cx-_consBoxMsg.cx)-(_m.w+_consBoxMsg.w)/2;
+          rootState._matrix.e = Math.abs(_m.cx-_consBoxMsg.cx)-(_m.w+_consBoxMsg.w+val.strokeWidth+actor.strokeWidth)/2;
+          setMe();
+        }else{
+          rootState._matrix.e = Math.abs(_m.x2-_consBoxMsg.x2)+_n.width+actor.strokeWidth;
+          setMe();                
+        }
+      }else if( type == "xBorderCenter" ){//焦点元素的中心点与边相错...
+        if( isLeft ){
+          rootState._matrix.e = Math.abs(_m.cx-_consBoxMsg.cx)-(_m.w+actor.strokeWidth)/2;
+          setMe();
+        }else{
+          rootState._matrix.e = Math.abs(_m.x2-_consBoxMsg.x2)+(_n.width+actor.strokeWidth)/2;
           setMe();
         }
+      }else if( type == "xBorderTarget" ){//目标元素的中心点与边相错
+        if( isLeft ){
+          rootState._matrix.e = Math.abs(_m.cx-_consBoxMsg.cx)-(_consBoxMsg.w+actor.strokeWidth)/2;
+          setMe();
+        }else{
+          rootState._matrix.e = Math.abs(_m.cx-_consBoxMsg.cx)+(_consBoxMsg.w+actor.strokeWidth)/2;
+          setMe();          
+        }
+      }else if( type == "xBorderInner" ){//x轴侧边内相交......
+        if( isLeft ){
+          rootState._matrix.e = Math.abs(_m.x-_consBoxMsg.x)+(val.strokeWidth+actor.strokeWidth)/2;
+          setMe();
+        }else{
+          rootState._matrix.e = Math.abs(_m.x2-_consBoxMsg.x2)-(val.strokeWidth+actor.strokeWidth)/2;
+          setMe();          
+        }
+      }else if( type == "xCenter" ){
+        rootState._matrix.e = Math.abs(_m.cx-_consBoxMsg.cx);
+        setMe();
       }
     }
-    let _compute = (_m,_n)=>{
-      console.log("++++++++++++++++++++++++++",Math.abs( _m.cx - _n.cx ) - ( _m.w+_n.w )/2,_m);
-      console.log("+++++++++++",document.getElementById(`gid${rootState.actLayerId}`).getBoundingClientRect());
-      
-      if( Math.abs( _m.cx - _n.cx ) > ( _m.w+_n.w)/2 + 5 ){//x轴外侧..
+    let _compute = (_m,_n,val,actor)=>{
+      let _rect = document.getElementById(`gid${rootState.actLayerId}`).getBoundingClientRect();
+      // rootState.Svg.paper.circle(_n.x+_rect.width,_n.y+_rect.height,1).attr({fill:"red"});
+      let _threshold = 5;
+      if( Math.abs( _m.cx - _n.cx ) > ( _m.w+_n.w+val.strokeWidth+actor.strokeWidth)/2 + _threshold ){//x轴外侧..
         console.log("x轴外侧..",Math.abs( _m.cx - _n.cx ));
-      }else if( Math.abs( _m.cx - _n.cx ) >= ( _m.w+_n.w )/2 - 5 && Math.abs( _m.cx - _n.cx ) <= ( _m.w+_n.w)/2 + 5 ){//x轴侧边外相交
+      }else if( Math.abs( _m.cx - _n.cx ) >= ( _m.w+_n.w+val.strokeWidth+actor.strokeWidth)/2 - _threshold && Math.abs( _m.cx - _n.cx ) <= ( _m.w+_n.w+val.strokeWidth+actor.strokeWidth)/2 + _threshold ){//x轴侧边外相交
         console.log("x轴侧边外相交",Math.abs( _m.cx - _n.cx ));
-        setLine(_m,_n,"xBorderOuter");
-      }else if( Math.abs( _m.cx - _n.cx ) >= _m.w/2 - 5 && Math.abs( _m.cx - _n.cx ) <= _m.w/2 + 5 ){//焦点元素的中心点与边相错
+        setLine(_m,_n,"xBorderOuter",val,actor);
+      }else if( Math.abs( _m.cx - _n.cx ) >= (_m.w+val.strokeWidth)/2 - _threshold && Math.abs( _m.cx - _n.cx ) <= (_m.w+val.strokeWidth)/2 + _threshold ){//焦点元素的中心点与边相错
         console.log("焦点元素的中心点与边相错",Math.abs( _m.cx - _n.cx ));
-      }else if( Math.abs( _m.cx - _n.cx ) >= _n.w/2 - 5 && Math.abs( _m.cx - _n.cx ) <= _n.w/2 + 5 ){//目标元素的中心点与边相错..
+        setLine(_m,_n,"xBorderCenter",val,actor);
+      }else if( Math.abs( _m.cx - _n.cx ) >= (_n.w+actor.strokeWidth)/2 - _threshold && Math.abs( _m.cx - _n.cx ) <= (_n.w+actor.strokeWidth)/2 + _threshold ){//目标元素的中心点与边相错..
         console.log("目标元素的中心点与边相错..",Math.abs( _m.cx - _n.cx ));
-      }else if(Math.abs( _m.cx - _n.cx ) >= Math.abs( _m.w-_n.w)/2 - 5 && Math.abs( _m.cx - _n.cx ) <= Math.abs( _m.w-_n.w)/2 + 5){//x轴侧边内相交
+        setLine(_m,_n,"xBorderTarget",val,actor);
+      }else if(Math.abs( _m.cx - _n.cx ) >= Math.abs( (_m.w+val.strokeWidth)-(_n.w+actor.strokeWidth))/2 - _threshold && Math.abs( _m.cx - _n.cx ) <= Math.abs( (_m.w+val.strokeWidth)-(_n.w+actor.strokeWidth))/2 + _threshold){//x轴侧边内相交
         console.log("x轴侧边内相交",Math.abs( _m.cx - _n.cx ));
+        setLine(_m,_n,"xBorderInner",val,actor);
+      }else if( _m.cx - _n.cx >= -_threshold && _m.cx - _n.cx <= _threshold ){
+        setLine(_m,_n,"xCenter",val,actor);
+        console.log("x轴中心点相交",Math.abs( _m.cx - _n.cx ));
       }
     }
     state.layer.map((val,index,arr)=>{
+      val.boxMsg.w = val.boxMsg.w+val.strokeWidth;
+      val.boxMsg.h = val.boxMsg.h+val.strokeWidth;
+      state.actItem.boxMsg.w = state.actItem.boxMsg.w+state.actItem.strokeWidth;
+      state.actItem.boxMsg.h = state.actItem.boxMsg.h+state.actItem.strokeWidth;
       if( val.id != rootState.actLayerId ){
-        // rootState.Svg.paper.circle(val.boxMsg.cx,val.bo.cy,5).attr({fill:"red"});
-        _compute( val.boxMsg , state.actItem.boxMsg );
+        _compute( val.boxMsg , state.actItem.boxMsg ,val,state.actItem);
       }
     })
   }
@@ -297,9 +336,16 @@ const mutations = {
   addAnt(context){//重绘控制点.....
       let rootState = this.getters.rootState;
       rootState.showAnt = true;
-      let _lineBox = rootState.Svg.select(`#id${rootState.actLayerId}`).getBBox();
-      let _strockWidth = Number( rootState.Svg.select(`#id${rootState.actLayerId}`).attr("stroke-width").replace('px',''));
-      
+      let _ele = rootState.Svg.select(`#id${rootState.actLayerId}`);
+      let _lineBox = _ele.getBBox();
+      let _strockWidth = Number( _ele.attr("stroke-width").replace('px',''));
+      let _stroke = document.getElementById(`id${rootState.actLayerId}`).getAttribute("stroke")
+      state.actItem.fill=_ele.attr("fill");
+      state.actItem.stroke=_stroke;
+      state.actItem.strokeWidth=_strockWidth;
+      state.actItem.strokeDasharray=_ele.attr("stroke-dasharray");
+      state.actItem.strokeDashoffset=_ele.attr("stroke-dashoffset");
+
       rootState.Svg.select("#_antBorder").attr({'data-id':rootState.actLayerId});
       rootState.Svg.select("#_antLine").attr({d:`M${_lineBox.x-_strockWidth/2} ${_lineBox.y-_strockWidth/2}H${_lineBox.x2+_strockWidth/2}V${_lineBox.y2+_strockWidth/2}H${_lineBox.x-_strockWidth/2}Z`});
       let _w = 5;
