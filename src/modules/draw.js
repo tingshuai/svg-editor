@@ -72,8 +72,6 @@ const actions = {
     rootState.Svg.selectAll(".gSvgItem").forEach((ele,i,arr)=>{
       let _dataset;
       let _ele,_gele,_boxMsg;
-      console.log(ele);
-      
       ele.drag();
       let onend = (e)=>{
         state.itemMoveMsg.state = "end";
@@ -87,8 +85,9 @@ const actions = {
         state.itemMoveMsg.cy = cy;
         state.itemMoveMsg.e = e;
         state.itemMoveMsg.state = "move";
-        rootState._matrix = new Snap.Matrix(1,0,0,1,x,y);
         rootState.showAnt = false;
+        rootState._matrix.e = x;
+        rootState._matrix.f = y;
         // 移动时更新焦点图形的box信息.....
         state.actItem.boxMsg.x = state.actItem.consBoxMsg.x + x;
         state.actItem.boxMsg.y = state.actItem.consBoxMsg.y + y;
@@ -97,7 +96,6 @@ const actions = {
         state.actItem.boxMsg.x2 = state.actItem.consBoxMsg.x2 + x;
         state.actItem.boxMsg.y2 = state.actItem.consBoxMsg.y2 + y;
 
-        this.dispatch("upLoadSvg");
         if(!e.ctrlKey){//当ctrl键按下时不计算对齐标记线....
           this.dispatch("computeLine",e);
         }
@@ -109,16 +107,10 @@ const actions = {
         _dataset = e.srcElement.dataset;
         _ele = rootState.Svg.select(`#id${_dataset.id}`);
         _gele = rootState.Svg.select(`#gid${_dataset.id}`);
-        // SVG.get(`id${_dataset.id}`).draggable();
+        rootState._matrix = new Snap.Matrix(1,0,0,1,0,0);
         commit("setActItem");
       }
       ele.drag(onmove, onstart, onend);
-
-
-
-
-
-
     });
     rootState.Svg.selectAll(".svgItem").forEach((ele,i,arr)=>{
       ele.hover((e)=>{
@@ -224,7 +216,7 @@ const actions = {
 
 // mutations
 const mutations = {
-  setActItem(context){//计算变换 的matrix
+  setActItem(context){//设定焦点元素的boxmsg
     let rootState = this.getters.rootState;
     return context.layer.filter((item,index,arr)=>{
       let _box = rootState.Svg.select(`#id${item.id}`).getBBox();
@@ -240,7 +232,7 @@ const mutations = {
         state.actItem.consBoxMsg = JSON.parse(JSON.stringify( item.boxMsg ));
         return item.boxMsg;
       }else{
-        rootState.Svg.paper.circle(item.boxMsg.cx,item.boxMsg.cy,1).attr({fill:"red"});
+        // rootState.Svg.paper.circle(item.boxMsg.cx,item.boxMsg.cy,1).attr({fill:"red"});
       }
     });
   },  

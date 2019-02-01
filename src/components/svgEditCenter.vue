@@ -201,7 +201,8 @@ export default {
                 fill:"none",
                   class:"gSvgItem",
                   id:'gid'+_storeState.actLayerId,
-                  "data-type":"line"
+                  "data-type":"line",
+                  "data-id":_storeState.actLayerId
               })
               this.$store.dispatch('bindFocusEvent');//以后聚焦显示蚂蚁线......
             }else if(obj.event.type == "mousemove"){
@@ -238,7 +239,8 @@ export default {
                 fill:"none",
                   class:"gSvgItem",
                   id:'gid'+_storeState.actLayerId,
-                  "data-type":"rect"
+                  "data-type":"rect",
+                  "data-id":_storeState.actLayerId
               })
               this.$store.dispatch('bindFocusEvent');//以后聚焦显示蚂蚁线......
             }else if(obj.event.type == "mousemove"){
