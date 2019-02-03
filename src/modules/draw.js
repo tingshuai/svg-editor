@@ -1,4 +1,5 @@
 import { joinSafe } from "upath";
+import { root } from "postcss";
 
 // import shop from '../../api/shop'
 
@@ -188,12 +189,27 @@ const actions = {
     let setMe = ()=>{
       _gele.transform( rootState._matrix );
     }
-    let _compute = (_m,_n)=>{
+    let _showLine = (x1,y1,x2,y2,_item)=>{
+      rootState.Draw.line(x1,y1,x2,y2).attr({"stroke":"#15e046","stroke-width":1,"class":`referenceLine${_item.id}`,"stroke-dasharray":"5 5"})
+    }
+    let _compute = (_m,_n,_item)=>{
       _pointX.forEach((val,i,arr)=>{
         _pointX.forEach((value,ii,array)=>{
           if( _n[val] >= _m[value] - _threshold && _n[val] <= _m[value] + _threshold ){
             rootState._matrix.e = _m[value]-_consBoxMsg[val];
-            setMe();          
+            setMe();//执行变换.....
+            if( Math.abs(_m.cy-_n.cy)>(_m.h+_n.h)/2 ){//不接触则显示对齐线...
+              let _x1 , _x2,_y1,_y2;
+              _x1 = _x2 = _m[value];
+              if( _m.cy < _n.cy ){//活动元素在下面
+                _y2 = i == 1 ? _n.cy : _n.y;
+                _y1 = ii == 1 ? _m.cy : _m.y2;
+              }else{
+                _y2 = i == 1 ? _n.cy : _n.y2;
+                _y1 = ii == 1 ? _m.cy : _m.y;
+              }
+              _showLine(_x1,_y1,_x2,_y2,_item);
+            }
           }
         })
       })
@@ -201,14 +217,27 @@ const actions = {
         _pointY.forEach((value,ii,array)=>{
           if( _n[val] >= _m[value] - _threshold && _n[val] <= _m[value] + _threshold ){
             rootState._matrix.f = _m[value]-_consBoxMsg[val];
-            setMe();          
+            setMe(_m,_n,"y");
+            if( Math.abs(_m.cx-_n.cx)>(_m.w+_n.w)/2 ){//不接触则显示对齐线...
+              let _x1 , _x2,_y1,_y2;
+              _y1 = _y2 = _m[value];
+              if( _m.cx < _n.cx ){//活动元素在下面
+                _x2 = i == 1 ? _n.cx : _n.x;
+                _x1 = ii == 1 ? _m.cx : _m.x2;
+              }else{
+                _x2 = i == 1 ? _n.cx : _n.x2;
+                _x1 = ii == 1 ? _m.cx : _m.x;
+              }
+              _showLine(_x1,_y1,_x2,_y2,_item);
+            }            
           }
         })
       })
     }
     state.layer.map((val,index,arr)=>{
       if( val.id != rootState.actLayerId ){
-        _compute( val.boxMsg,state.actItem.boxMsg );
+        rootState.Svg.selectAll(`line.referenceLine${val.id}`).remove();
+        _compute( val.boxMsg,state.actItem.boxMsg,val );
       }
     })
   }

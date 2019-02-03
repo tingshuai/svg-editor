@@ -16,12 +16,12 @@
             <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
           </g>
           <g id="referenceLine">
-            <line class="referenceLine_top" x1="0" y1="0" x2="0" y2="0" stroke="orange" stroke-dasharray="5 5"></line>
-            <line class="referenceLine_right" x1="0" y1="0" x2="0" y2="0" stroke="orange" stroke-dasharray="5 5"></line>
-            <line class="referenceLine_bottom" x1="0" y1="0" x2="0" y2="0" stroke="orange" stroke-dasharray="5 5"></line>
-            <line class="referenceLine_left" x1="0" y1="0" x2="0" y2="0" stroke="orange" stroke-dasharray="5 5"></line>
-            <line class="referenceLine_h" x1="0" y1="0" x2="0" y2="0" stroke="orange" stroke-dasharray="5 5"></line>
-            <line class="referenceLine_v" x1="0" y1="0" x2="0" y2="0" stroke="orange" stroke-dasharray="5 5"></line>
+            <line class="referenceLine" id="referenceLine_top" x1="0" y1="0" x2="0" y2="0" stroke="#15e046" stroke-dasharray="5 5"></line>
+            <line class="referenceLine" id="referenceLine_right" x1="0" y1="0" x2="0" y2="0" stroke="#15e046" stroke-dasharray="5 5"></line>
+            <line class="referenceLine" id="referenceLine_bottom" x1="0" y1="0" x2="0" y2="0" stroke="#15e046" stroke-dasharray="5 5"></line>
+            <line class="referenceLine" id="referenceLine_left" x1="0" y1="0" x2="0" y2="0" stroke="#15e046" stroke-dasharray="5 5"></line>
+            <line class="referenceLine" id="referenceLine_h" x1="0" y1="0" x2="0" y2="0" stroke="#15e046" stroke-dasharray="5 5"></line>
+            <line class="referenceLine" id="referenceLine_v" x1="0" y1="0" x2="0" y2="0" stroke="#15e046" stroke-dasharray="5 5"></line>
           </g>
         </svg>
         <div class="posiMsg" :style="{'left':dragPosition.x +'px','top':dragPosition.y + 'px'}" v-if="movePosition.show">
@@ -95,6 +95,7 @@ export default {
     _storeState.Svg = this.Snap("#svg");
     _storeState.canvas = this.Snap("#canvas");
     _storeState.Snap = this.Snap;
+    _storeState.Draw = SVG('svg');//初始化svg.js 绘图对象..
     _storeState.draw.actItem.matrix = new Snap.Matrix();
     this.$store.dispatch("bindFocusEvent");
     this.$store.dispatch("bindDrag");
