@@ -189,8 +189,17 @@ const actions = {
     let setMe = ()=>{
       _gele.transform( rootState._matrix );
     }
-    let _showLine = (x1,y1,x2,y2,_item)=>{
-      rootState.Draw.line(x1,y1,x2,y2).attr({"stroke":"#15e046","stroke-width":1,"class":`referenceLine${_item.id}`,"stroke-dasharray":"5 5"})
+    let _showLine = (x1,y1,x2,y2,_item,__line)=>{
+      let line = rootState.Draw.line(x1,y1,x2,y2).attr({"stroke":"#FF6600","stroke-width":1,"class":`referenceLine${_item.id}`,"stroke-dasharray":"5 5"})
+      line.marker('start', 5, 5, function(add) {
+        add.circle(5).fill('#FF6600')
+      })
+      line.marker('mid', 20, 10, function(add) {
+        add.text("33333")
+      })      
+      line.marker('end', 5, 5, function(add) {
+        add.circle(5).fill('#FF6600')
+      })
     }
     let _compute = (_m,_n,_item)=>{
       _pointX.forEach((val,i,arr)=>{
