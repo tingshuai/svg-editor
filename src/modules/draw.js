@@ -34,7 +34,6 @@ const getters = {
       return rootState;
     }
 }
-
 // actions
 const actions = {
   resizeEnd({ state, commit, rootState },obj){//结束变换触发....
@@ -284,6 +283,7 @@ const mutations = {
     let _gele = rootState.Svg.select(`#gid${obj.id}`);
     let _antBorder = rootState.Svg.select("#_antBorder");
     let _box = rootState.Snap.path.getBBox(_ele.realPath);
+    rootState.actLayerId = obj.id;
     context.itemMoveMsg.x = obj.x;
     context.itemMoveMsg.y = obj.y;
     rootState._matrix = new Snap.Matrix();
@@ -341,6 +341,7 @@ const mutations = {
       let rootState = this.getters.rootState;
       rootState.showAnt = true;
       let _ele = rootState.Svg.select(`#id${rootState.actLayerId}`);
+      
       let _lineBox = _ele.getBBox();
       let _strockWidth = Number( _ele.attr("stroke-width").replace('px',''));
       let _stroke = document.getElementById(`id${rootState.actLayerId}`).getAttribute("stroke")

@@ -153,7 +153,6 @@ export default {
       _storeState.coordinateDown = [ e.pageX,e.pageY ,e];//记录鼠标按下的坐标....
       _storeState.coordinateOffsetDown = [ e.offsetX,e.offsetY ,e];
       _storeState.time = new Date().getTime();
-      _storeState.actLayerId = _storeState.time;
       this.draw({ event:{type:"mousedown"} });
       e.preventDefault();
     },
@@ -169,6 +168,7 @@ export default {
         case "xiantiao":{//线段
           if( _storeState.draw.timer ){
             if( obj.event.type == "mousedown" ){
+              this.$store.dispatch("addLayer");
               let _line = _storeState.canvas.paper.path(`M${_storeState.coordinateOffsetDown[0]-5} ${_storeState.coordinateOffsetDown[1]-5}L${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}`).attr({
                   stroke: _storeState.defaultConfig.stroke,
                   "stroke-width": _storeState.defaultConfig.strokeWidth,
@@ -178,7 +178,7 @@ export default {
                   'data-type':"line"
               });
               _storeState.canvas.paper.g(_line).attr({
-                  fill:"none",
+                fill:"none",
                   class:"gSvgItem",
                   id:'gid'+_storeState.time,
                   "data-type":"line",
@@ -203,6 +203,7 @@ export default {
         case "juxing1":{//矩形工具.....
           if( _storeState.draw.timer ){
             if( obj.event.type == "mousedown" ){
+              this.$store.dispatch("addLayer");
               let _rect = _storeState.canvas.paper.path(`M${_storeState.coordinateOffsetDown[0]+_storeState.draw.actItem.strokeWidth/2} ${_storeState.coordinateOffsetDown[1]+_storeState.draw.actItem.strokeWidth/2}`).attr({
                   stroke: _storeState.defaultConfig.stroke,
                   "stroke-width": _storeState.defaultConfig.strokeWidth,
