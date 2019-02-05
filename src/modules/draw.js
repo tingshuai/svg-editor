@@ -41,6 +41,7 @@ const actions = {
     let _ele = rootState.Svg.select(`#id${obj.id}`);
     let _gele = rootState.Svg.select(`#gid${obj.id}`);
     let _m = new Snap.Matrix();
+    rootState.Svg.selectAll("g.referenceLine").remove();//清除referenceLine 对齐线
     let _antBorder = rootState.Svg.select("#_antBorder");
     if( rootState._matrix.toTransformString() != _m.toTransformString() ){
       state.layer.find((val,i,arr)=>{
@@ -79,6 +80,10 @@ const actions = {
         this.dispatch("resizeEnd",{"e":e,"id":_dataset.id,"type":_dataset.type});
       }
       let onmove = (x,y,cx,cy,e)=>{
+        if( e.shiftKey ){//按住shift 横移竖直移动.....
+          x > y ? y = 0 : x = 0; 
+          _gele.attr({"transform":new Snap.Matrix(1,0,0,1,x,y)})
+        }
         e.eventType = "resize";
         state.itemMoveMsg.x = x;
         state.itemMoveMsg.y = y;
@@ -189,16 +194,15 @@ const actions = {
     let setMe = ()=>{
       _gele.transform( rootState._matrix );
     }
-    let _showLine = (x1,y1,x2,y2,_item,__line)=>{
-      let line = rootState.Draw.line(x1,y1,x2,y2).attr({"stroke":"#FF6600","stroke-width":1,"class":`referenceLine${_item.id}`,"stroke-dasharray":"5 5"})
-      line.marker('start', 5, 5, function(add) {
-        add.circle(5).fill('#FF6600')
+    let _showLine = (x1,y1,x2,y2,_item,_move,_type)=>{
+      let _group = rootState.Draw.group().attr({id:`referenceLine${_item.id}`,class:"referenceLine"});
+      let _line = _group.line(x1,y1,x2,y2).attr({"stroke":"#FF6600","stroke-width":1,"class":`referenceLine${_item.id}`,"stroke-dasharray":"5 5"})
+      _group.text(`${Math.abs(_move)}px`).center(_line.bbox().cx,_line.bbox().cy-4).font({size:12,anchor:_type == "x" ? 'middle' : '',fill:"#FF6600"});
+      _line.marker('start', 5, 5, function(add) {
+        add.circle(5).fill('#FF6600');
       })
-      line.marker('mid', 20, 10, function(add) {
-        add.text("33333")
-      })      
-      line.marker('end', 5, 5, function(add) {
-        add.circle(5).fill('#FF6600')
+      _line.marker('end', 5, 5, function(add) {
+        add.circle(5).fill('#FF6600');
       })
     }
     let _compute = (_m,_n,_item)=>{
@@ -217,7 +221,7 @@ const actions = {
                 _y2 = i == 1 ? _n.cy : _n.y2;
                 _y1 = ii == 1 ? _m.cy : _m.y;
               }
-              _showLine(_x1,_y1,_x2,_y2,_item);
+              _showLine(_x1,_y1,_x2,_y2,_item,Math.abs(_y1-_y2),"x");
             }
           }
         })
@@ -237,7 +241,7 @@ const actions = {
                 _x2 = i == 1 ? _n.cx : _n.x2;
                 _x1 = ii == 1 ? _m.cx : _m.x;
               }
-              _showLine(_x1,_y1,_x2,_y2,_item);
+              _showLine(_x1,_y1,_x2,_y2,_item,Math.abs(_x1-_x2),"y");
             }            
           }
         })
@@ -245,7 +249,7 @@ const actions = {
     }
     state.layer.map((val,index,arr)=>{
       if( val.id != rootState.actLayerId ){
-        rootState.Svg.selectAll(`line.referenceLine${val.id}`).remove();
+        rootState.Svg.selectAll(`g#referenceLine${val.id}`).remove();//清除referenceLine 对齐线
         _compute( val.boxMsg,state.actItem.boxMsg,val );
       }
     })

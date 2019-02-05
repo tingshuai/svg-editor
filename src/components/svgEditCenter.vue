@@ -138,7 +138,7 @@ export default {
           this.movePosition.x = 0;
           this.movePosition.y = 0;
           this.dragPosition.x = n.cx + 10;
-          this.dragPosition.y = n.cy - 50;          
+          this.dragPosition.y = n.cy - 50;
           this.movePosition.show = true;
         }
       },
@@ -146,26 +146,14 @@ export default {
     }
   },
   methods:{
-    antAni(){//蚂蚁线动画
-      let _storeState = this.$store.state;
-      let _lineLength = Svg.select(`#ant${_storeState.actLayerId}`).getTotalLength();
-      let ani = ()=>{
-        this.Snap.animate(0, _lineLength*150, (val)=>{
-          Svg.select(`#ant${_storeState.actLayerId}`).attr({
-            strokeDashoffset:val,
-          });
-        },_lineLength*20000,()=>{
-          setTimeout(ani,_lineLength*20000)
-        });
-      }
-      ani();
-    },
     mousedown(e){
       let that = this;
       let _storeState = this.$store.state;
       _storeState.draw.timer = true;//绘画开始.....
       _storeState.coordinateDown = [ e.pageX,e.pageY ,e];//记录鼠标按下的坐标....
       _storeState.coordinateOffsetDown = [ e.offsetX,e.offsetY ,e];
+      _storeState.time = new Date().getTime();
+      _storeState.actLayerId = _storeState.time;
       this.draw({ event:{type:"mousedown"} });
       e.preventDefault();
     },
@@ -181,25 +169,24 @@ export default {
         case "xiantiao":{//线段
           if( _storeState.draw.timer ){
             if( obj.event.type == "mousedown" ){
-              this.$store.dispatch("addLayer");
               let _line = _storeState.canvas.paper.path(`M${_storeState.coordinateOffsetDown[0]-5} ${_storeState.coordinateOffsetDown[1]-5}L${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}`).attr({
                   stroke: _storeState.defaultConfig.stroke,
                   "stroke-width": _storeState.defaultConfig.strokeWidth,
                   class:"svgItem",
-                  id:'id'+ _storeState.actLayerId,
-                  'data-id':_storeState.actLayerId,
+                  id:'id'+ _storeState.time,
+                  'data-id':_storeState.time,
                   'data-type':"line"
               });
               _storeState.canvas.paper.g(_line).attr({
-                fill:"none",
+                  fill:"none",
                   class:"gSvgItem",
-                  id:'gid'+_storeState.actLayerId,
+                  id:'gid'+_storeState.time,
                   "data-type":"line",
-                  "data-id":_storeState.actLayerId
+                  "data-id":_storeState.time
               })
               this.$store.dispatch('bindFocusEvent');//以后聚焦显示蚂蚁线......
             }else if(obj.event.type == "mousemove"){
-              Svg.select(`#id${_storeState.actLayerId}`).attr({
+              Svg.select(`#id${_storeState.time}`).attr({
                 d:`M${_storeState.coordinateOffsetDown[0]-5} ${_storeState.coordinateOffsetDown[1]-5}L${_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0]} ${_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]}`
               });
               this.$store.commit('addAnt',_storeState);//重绘蚂蚁线......
@@ -216,7 +203,6 @@ export default {
         case "juxing1":{//矩形工具.....
           if( _storeState.draw.timer ){
             if( obj.event.type == "mousedown" ){
-              this.$store.dispatch("addLayer");
               let _rect = _storeState.canvas.paper.path(`M${_storeState.coordinateOffsetDown[0]+_storeState.draw.actItem.strokeWidth/2} ${_storeState.coordinateOffsetDown[1]+_storeState.draw.actItem.strokeWidth/2}`).attr({
                   stroke: _storeState.defaultConfig.stroke,
                   "stroke-width": _storeState.defaultConfig.strokeWidth,
@@ -224,20 +210,20 @@ export default {
                   "vector-effect":"non-scaling-stroke",
                   "stroke-miterlimit":10,
                   "stroke-linejoin":"miter",
-                  id:'id'+ _storeState.actLayerId,
-                  'data-id':_storeState.actLayerId,
+                  id:'id'+ _storeState.time,
+                  'data-id':_storeState.time,
                   "data-type":"rect"
               });
               _storeState.canvas.paper.g(_rect).attr({
                 fill:"none",
                   class:"gSvgItem",
-                  id:'gid'+_storeState.actLayerId,
+                  id:'gid'+_storeState.time,
                   "data-type":"rect",
-                  "data-id":_storeState.actLayerId
+                  "data-id":_storeState.time
               })
               this.$store.dispatch('bindFocusEvent');//以后聚焦显示蚂蚁线......
             }else if(obj.event.type == "mousemove"){
-              Svg.select(`#id${_storeState.actLayerId}`).attr({
+              Svg.select(`#id${_storeState.time}`).attr({
                 d:`M${_storeState.coordinateOffsetDown[0]+_storeState.draw.actItem.strokeWidth/2} ${_storeState.coordinateOffsetDown[1]+_storeState.draw.actItem.strokeWidth/2}H${_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0]-_storeState.draw.actItem.strokeWidth/2}V${_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]-_storeState.draw.actItem.strokeWidth/2}H${_storeState.coordinateOffsetDown[0]+_storeState.draw.actItem.strokeWidth/2}Z`
               });
               this.$store.commit('addAnt',_storeState);
@@ -308,7 +294,7 @@ export default {
   display: flex;
   width: auto;
   height: 50px;
-  background-color: rgba(0,0,0,0.7);
+  background-color: rgba(0,0,0,0.5);
   border-radius: 4px;
   overflow: hidden;
   justify-content: space-between;
