@@ -1,6 +1,6 @@
 <template>
   <section class="container">
-    <top></top>
+    <top :sel-type="selType"></top>
     <div class="bottom">
       <left ref="left" @selTool="selTool" :keys="keys"></left>
       <center ref="center" :coordinateMove="coordinateMove" :sel-type="selType"></center>

@@ -4,15 +4,32 @@
         <img src="../assets/head.jpg" alt="">
         <div class="txt">
             <span class="name">挺帅</span>
-            <span class="line">|</span>
+            <span class="line"> | </span>
             <span class="exit">退出</span>
         </div>
       </section>
-      <section class="controlbar"></section>
+      <section class="controlbar">
+          <div class="menuList">
+              <ul>
+                  <li><span class="menuTxt">文件</span></li>
+                  <li><span class="menuTxt">编辑</span></li>
+                  <li><span class="menuTxt">对象</span></li>
+              </ul>
+          </div>
+          <div class="controlList">
+              
+          </div>
+      </section>
     </div>
 </template>
 <script>
 export default {
+  props:{
+    selType:{
+      default:'',
+      type:String
+    }
+  },
   components: {
     
   },  
@@ -26,6 +43,11 @@ export default {
   },
   methods:{
      
+  },
+  watch:{
+    selType(n,o){
+      console.log(n);
+    }      
   }
 }
 </script>
@@ -70,9 +92,37 @@ export default {
       }
   }
   .controlbar{
-      flex-grow: 1;
-      height: 100%;
-
+    flex-grow: 1;
+    height: 100%;
+    .menuList{
+        border-bottom:1px solid @color;
+        box-shadow: @color 0 0.4px 0;
+        padding-left: 15px;
+        ul{
+            width: 100%;
+            display: flex;
+            padding: 5px 0;
+            li{
+                display: inline-block;
+                color: white;
+                font-size: 13px;
+                margin: 0 1px;
+                :hover{
+                    cursor:default;
+                    background-color: #676767;
+                    box-shadow: 0px 0px 5px @color;
+                }
+                .menuTxt{
+                    display: inline-block;
+                    padding: 2px 8px;
+                    border-radius: 3px;
+                    :hover{
+                        cursor:default;
+                    }                    
+                }                
+            }
+        }
+    }
   }
 }
 </style>
