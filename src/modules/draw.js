@@ -80,7 +80,7 @@ const actions = {
       }
       let onmove = (x,y,cx,cy,e)=>{
         if( e.shiftKey ){//按住shift 横移竖直移动.....
-          x > y ? y = 0 : x = 0; 
+          Math.abs(x) > Math.abs(y) ? y = 0 : x = 0; 
           _gele.attr({"transform":new Snap.Matrix(1,0,0,1,x,y)})
         }
         e.eventType = "resize";
@@ -195,7 +195,7 @@ const actions = {
     let _showLine = (x1,y1,x2,y2,_item,_move,_type)=>{
       let _group = rootState.Draw.group().attr({id:`referenceLine${_item.id}`,class:"referenceLine"});
       let _line = _group.line(x1,y1,x2,y2).attr({"stroke":"#FF6600","stroke-width":1,"class":`referenceLine${_item.id}`,"stroke-dasharray":"5 5"})
-      _group.text(`${Math.abs(_move)}px`).center(_line.bbox().cx,_line.bbox().cy-4).font({size:12,anchor:_type == "x" ? 'middle' : '',fill:"#FF6600"});
+      _group.text(`${Math.floor(Math.abs(_move))}px`).center(_line.bbox().cx,_line.bbox().cy-4).font({size:12,anchor:_type == "x" ? 'middle' : '',fill:"#FF6600"});
       _line.marker('start', 5, 5, function(add) {
         add.circle(5).fill('#FF6600');
       })
@@ -343,7 +343,7 @@ const mutations = {
       if(rootState.Svg.select(`#id${__actId}`) != null){
           let _ele = rootState.Svg.select(`#id${__actId}`);
           let _lineBox = _ele.getBBox();
-          let _strockWidth = Number( _ele.attr("stroke-width").replace('px',''));
+          let _strockWidth = Number( _ele.attr("stroke-width").replace('px',''))+2;
           let _stroke = document.getElementById(`id${__actId}`).getAttribute("stroke")
           state.actItem.fill=_ele.attr("fill");
           state.actItem.stroke=_stroke;

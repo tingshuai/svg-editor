@@ -202,7 +202,7 @@ export default {
         case "juxing1":{//矩形工具.....
           if( _storeState.draw.timer ){
             if( SVG.get(`id${_storeState.time}`) == null ){
-              let _rect = _storeState.Draw.path(`M${_storeState.coordinateOffsetDown[0]+_storeState.draw.actItem.strokeWidth/2} ${_storeState.coordinateOffsetDown[1]+_storeState.draw.actItem.strokeWidth/2}`).attr({
+              let _rect = _storeState.Draw.path(`M${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}`).attr({
                   stroke: _storeState.defaultConfig.stroke,
                   "stroke-width": _storeState.defaultConfig.strokeWidth,
                   class:"svgItem",
@@ -224,7 +224,7 @@ export default {
               this.$store.dispatch("addLayer",_storeState.time);
             }else{
               SVG.get(`id${_storeState.time}`).attr({
-                d:`M${_storeState.coordinateOffsetDown[0]+_storeState.draw.actItem.strokeWidth/2} ${_storeState.coordinateOffsetDown[1]+_storeState.draw.actItem.strokeWidth/2}H${_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0]-_storeState.draw.actItem.strokeWidth/2}V${_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]-_storeState.draw.actItem.strokeWidth/2}H${_storeState.coordinateOffsetDown[0]+_storeState.draw.actItem.strokeWidth/2}Z`
+                d:`M${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}H${_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0]}V${_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]}H${_storeState.coordinateOffsetDown[0]}Z`
               });
               this.$store.commit('addAnt',_storeState.time);
             }
