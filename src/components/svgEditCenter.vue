@@ -87,7 +87,7 @@ export default {
     _storeState.Svg = this.Snap("#svg");
     _storeState.canvas = this.Snap("#canvas");
     _storeState.Snap = this.Snap;
-    _storeState.Draw = SVG('svg');//初始化svg.js 绘图对象..
+    _storeState.Draw = SVG('canvas');//初始化svg.js 绘图对象..
     _storeState.draw.actItem.matrix = new Snap.Matrix();
     this.$store.dispatch("bindFocusEvent");
     this.$store.dispatch("bindDrag");
@@ -153,7 +153,6 @@ export default {
       _storeState.coordinateDown = [ e.pageX,e.pageY ,e];//记录鼠标按下的坐标....
       _storeState.coordinateOffsetDown = [ e.offsetX,e.offsetY ,e];
       _storeState.time = new Date().getTime();
-      this.draw({ event:{type:"mousedown"} });
       e.preventDefault();
     },
     draw(obj){
@@ -167,30 +166,30 @@ export default {
         }
         case "xiantiao":{//线段
           if( _storeState.draw.timer ){
-            if( obj.event.type == "mousedown" ){
-              this.$store.dispatch("addLayer");
-              let _line = _storeState.canvas.paper.path(`M${_storeState.coordinateOffsetDown[0]-5} ${_storeState.coordinateOffsetDown[1]-5}L${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}`).attr({
-                  stroke: _storeState.defaultConfig.stroke,
-                  "stroke-width": _storeState.defaultConfig.strokeWidth,
-                  class:"svgItem",
-                  id:'id'+ _storeState.time,
-                  'data-id':_storeState.time,
-                  'data-type':"line"
-              });
-              _storeState.canvas.paper.g(_line).attr({
-                fill:"none",
-                  class:"gSvgItem",
-                  id:'gid'+_storeState.time,
-                  "data-type":"line",
-                  "data-id":_storeState.time
-              })
-              this.$store.dispatch('bindFocusEvent');//以后聚焦显示蚂蚁线......
-            }else if(obj.event.type == "mousemove"){
-              Svg.select(`#id${_storeState.time}`).attr({
-                d:`M${_storeState.coordinateOffsetDown[0]-5} ${_storeState.coordinateOffsetDown[1]-5}L${_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0]} ${_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]}`
-              });
-              this.$store.commit('addAnt',_storeState);//重绘蚂蚁线......
-            }
+              if( SVG.get(`id${_storeState.time}`) == null ){
+                let _line = _storeState.Draw.path(`M${_storeState.coordinateOffsetDown[0]-5} ${_storeState.coordinateOffsetDown[1]-5}L${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}`).attr({
+                    stroke: _storeState.defaultConfig.stroke,
+                    "stroke-width": _storeState.defaultConfig.strokeWidth,
+                    class:"svgItem",
+                    id:'id'+ _storeState.time,
+                    'data-id':_storeState.time,
+                    'data-type':"line"
+                });
+                _storeState.Draw.group().add(_line).attr({
+                    fill:"none",
+                    class:"gSvgItem",
+                    id:'gid'+_storeState.time,
+                    "data-type":"line",
+                    "data-id":_storeState.time
+                })
+                this.$store.dispatch('bindFocusEvent');//以后聚焦显示蚂蚁线......
+                this.$store.dispatch("addLayer",_storeState.time);
+              }else{
+                SVG.get(`id${_storeState.time}`).attr({
+                  d:`M${_storeState.coordinateOffsetDown[0]-5} ${_storeState.coordinateOffsetDown[1]-5}L${_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0]} ${_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]}`
+                });
+                this.$store.commit('addAnt',_storeState.time);//重绘蚂蚁线......
+              }
           }
           break;
         }
@@ -202,9 +201,8 @@ export default {
         }
         case "juxing1":{//矩形工具.....
           if( _storeState.draw.timer ){
-            if( obj.event.type == "mousedown" ){
-              this.$store.dispatch("addLayer");
-              let _rect = _storeState.canvas.paper.path(`M${_storeState.coordinateOffsetDown[0]+_storeState.draw.actItem.strokeWidth/2} ${_storeState.coordinateOffsetDown[1]+_storeState.draw.actItem.strokeWidth/2}`).attr({
+            if( SVG.get(`id${_storeState.time}`) == null ){
+              let _rect = _storeState.Draw.path(`M${_storeState.coordinateOffsetDown[0]+_storeState.draw.actItem.strokeWidth/2} ${_storeState.coordinateOffsetDown[1]+_storeState.draw.actItem.strokeWidth/2}`).attr({
                   stroke: _storeState.defaultConfig.stroke,
                   "stroke-width": _storeState.defaultConfig.strokeWidth,
                   class:"svgItem",
@@ -215,7 +213,7 @@ export default {
                   'data-id':_storeState.time,
                   "data-type":"rect"
               });
-              _storeState.canvas.paper.g(_rect).attr({
+              _storeState.Draw.group().add(_rect).attr({
                 fill:"none",
                   class:"gSvgItem",
                   id:'gid'+_storeState.time,
@@ -223,11 +221,12 @@ export default {
                   "data-id":_storeState.time
               })
               this.$store.dispatch('bindFocusEvent');//以后聚焦显示蚂蚁线......
-            }else if(obj.event.type == "mousemove"){
-              Svg.select(`#id${_storeState.time}`).attr({
+              this.$store.dispatch("addLayer",_storeState.time);
+            }else{
+              SVG.get(`id${_storeState.time}`).attr({
                 d:`M${_storeState.coordinateOffsetDown[0]+_storeState.draw.actItem.strokeWidth/2} ${_storeState.coordinateOffsetDown[1]+_storeState.draw.actItem.strokeWidth/2}H${_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0]-_storeState.draw.actItem.strokeWidth/2}V${_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]-_storeState.draw.actItem.strokeWidth/2}H${_storeState.coordinateOffsetDown[0]+_storeState.draw.actItem.strokeWidth/2}Z`
               });
-              this.$store.commit('addAnt',_storeState);
+              this.$store.commit('addAnt',_storeState.time);
             }
           }        
           break;

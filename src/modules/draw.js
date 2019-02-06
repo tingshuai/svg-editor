@@ -51,20 +51,20 @@ const actions = {
           val.matrix = rootState._matrix;
         }
       });
-      commit("addAnt",rootState);
+      commit("addAnt");
       rootState._matrix = new Snap.Matrix();
     }
   },
   bindFocusEvent({ state, commit, rootState }){
     if(rootState.actLayerId != null){//判断是否有焦点....
-      commit("addAnt",rootState);//聚焦时应该重绘蚂蚁线.......
+      commit("addAnt");//聚焦时应该重绘蚂蚁线.......
     }
     rootState.Svg.selectAll('.svgItem').forEach((val,i,arr)=>{
       val.unclick();
       val.mousedown((e)=>{
         let _dataset = e.currentTarget.dataset;
         rootState.actLayerId = _dataset.id;//更新活动元素ID
-        commit("addAnt",rootState);//添加蚂蚁线
+        commit("addAnt");//添加蚂蚁线
       });
     })
   },   
@@ -125,9 +125,8 @@ const actions = {
       });
     });
   },
-  addLayer({ state, commit, rootState }){
-    let _time = new Date().getTime();
-    rootState.actLayerId = _time;      
+  addLayer({ state, commit, rootState },_id){
+    rootState.actLayerId = _id;
     state.layer.push({
       name:"图层" + (state.layer.length + 1),
       id:rootState.actLayerId,
@@ -337,34 +336,36 @@ const mutations = {
     // rootState.Svg.select("#demo_circle").attr({cx:`${_box.x}`,cy:`${_box.y}`,r:`${_box.r0}`,fill:`#${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}`})
     this.dispatch("upLoadSvg");
   },
-  addAnt(context){//重绘控制点.....
+  addAnt(context,_id){//重绘控制点.....
       let rootState = this.getters.rootState;
+      let __actId = _id ? _id : rootState.actLayerId;
       rootState.showAnt = true;
-      let _ele = rootState.Svg.select(`#id${rootState.actLayerId}`);
-      
-      let _lineBox = _ele.getBBox();
-      let _strockWidth = Number( _ele.attr("stroke-width").replace('px',''));
-      let _stroke = document.getElementById(`id${rootState.actLayerId}`).getAttribute("stroke")
-      state.actItem.fill=_ele.attr("fill");
-      state.actItem.stroke=_stroke;
-      state.actItem.strokeWidth=_strockWidth;
-      state.actItem.strokeDasharray=_ele.attr("stroke-dasharray");
-      state.actItem.strokeDashoffset=_ele.attr("stroke-dashoffset");
-
-      rootState.Svg.select("#_antBorder").attr({'data-id':rootState.actLayerId});
-      rootState.Svg.select("#_antLine").attr({d:`M${_lineBox.x-_strockWidth/2} ${_lineBox.y-_strockWidth/2}H${_lineBox.x2+_strockWidth/2}V${_lineBox.y2+_strockWidth/2}H${_lineBox.x-_strockWidth/2}Z`});
-      let _w = 5;
-      rootState.Svg.select("#squareLT").attr({x:_lineBox.x-_w-_strockWidth/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":rootState.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y2});
-      rootState.Svg.select("#squareCT").attr({x:_lineBox.x+_lineBox.width/2-_w/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":rootState.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y2});
-      rootState.Svg.select("#squareRT").attr({x:_lineBox.x2+_strockWidth/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":rootState.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y2});
-      rootState.Svg.select("#squareCR").attr({x:_lineBox.x2+_strockWidth/2,y:_lineBox.y+_strockWidth/2+_lineBox.height/2-_w/2-_strockWidth/2,width:_w,height:_w,"data-id":rootState.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
-      rootState.Svg.select("#squareBR").attr({x:_lineBox.x2+_strockWidth/2,y:_lineBox.y2+_strockWidth/2,width:_w,height:_w,"data-id":rootState.actLayerId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y});
-      rootState.Svg.select("#squareBC").attr({x:_lineBox.x+_lineBox.width/2-_w/2,y:_lineBox.y2+_strockWidth/2,width:_w,height:_w,"data-id":rootState.actLayerId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y});
-      rootState.Svg.select("#squareBL").attr({x:_lineBox.x-_w-_strockWidth/2,y:_lineBox.y2+_strockWidth/2,width:_w,height:_w,"data-id":rootState.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y});
-      rootState.Svg.select("#squareCL").attr({x:_lineBox.x-_w-_strockWidth/2,y:_lineBox.y+_strockWidth/2+_lineBox.height/2-_w/2-_strockWidth/2,width:_w,height:_w,"data-id":rootState.actLayerId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
-
-      rootState.Svg.select("#rotateLine").attr({d:`M${_lineBox.x2+_strockWidth/2} ${_lineBox.y+_strockWidth/2+_lineBox.height/2-_strockWidth/2}L${_lineBox.x2+_strockWidth/2 + 30} ${_lineBox.y+_strockWidth/2+_lineBox.height/2-_strockWidth/2}`});
-      rootState.Svg.select("#rotateBar").attr({cx:_lineBox.x2+_strockWidth/2 + 30,cy:_lineBox.y+_strockWidth/2+_lineBox.height/2-_strockWidth/2,r:5,"data-fixedpoint_x":_lineBox.cx,"data-fixedpoint_y":_lineBox.cy,"data-id":rootState.actLayerId});
+      if(rootState.Svg.select(`#id${__actId}`) != null){
+          let _ele = rootState.Svg.select(`#id${__actId}`);
+          let _lineBox = _ele.getBBox();
+          let _strockWidth = Number( _ele.attr("stroke-width").replace('px',''));
+          let _stroke = document.getElementById(`id${__actId}`).getAttribute("stroke")
+          state.actItem.fill=_ele.attr("fill");
+          state.actItem.stroke=_stroke;
+          state.actItem.strokeWidth=_strockWidth;
+          state.actItem.strokeDasharray=_ele.attr("stroke-dasharray");
+          state.actItem.strokeDashoffset=_ele.attr("stroke-dashoffset");
+    
+          rootState.Svg.select("#_antBorder").attr({'data-id':__actId});
+          rootState.Svg.select("#_antLine").attr({d:`M${_lineBox.x-_strockWidth/2} ${_lineBox.y-_strockWidth/2}H${_lineBox.x2+_strockWidth/2}V${_lineBox.y2+_strockWidth/2}H${_lineBox.x-_strockWidth/2}Z`});
+          let _w = 5;
+          rootState.Svg.select("#squareLT").attr({x:_lineBox.x-_w-_strockWidth/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":__actId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y2});
+          rootState.Svg.select("#squareCT").attr({x:_lineBox.x+_lineBox.width/2-_w/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":__actId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y2});
+          rootState.Svg.select("#squareRT").attr({x:_lineBox.x2+_strockWidth/2,y:_lineBox.y-_w-_strockWidth/2,width:_w,height:_w,"data-id":__actId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y2});
+          rootState.Svg.select("#squareCR").attr({x:_lineBox.x2+_strockWidth/2,y:_lineBox.y+_strockWidth/2+_lineBox.height/2-_w/2-_strockWidth/2,width:_w,height:_w,"data-id":__actId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
+          rootState.Svg.select("#squareBR").attr({x:_lineBox.x2+_strockWidth/2,y:_lineBox.y2+_strockWidth/2,width:_w,height:_w,"data-id":__actId,"data-fixedpoint_x":_lineBox.x,"data-fixedpoint_y":_lineBox.y});
+          rootState.Svg.select("#squareBC").attr({x:_lineBox.x+_lineBox.width/2-_w/2,y:_lineBox.y2+_strockWidth/2,width:_w,height:_w,"data-id":__actId,"data-fixedpoint_x":_lineBox.x+_lineBox.width/2,"data-fixedpoint_y":_lineBox.y});
+          rootState.Svg.select("#squareBL").attr({x:_lineBox.x-_w-_strockWidth/2,y:_lineBox.y2+_strockWidth/2,width:_w,height:_w,"data-id":__actId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y});
+          rootState.Svg.select("#squareCL").attr({x:_lineBox.x-_w-_strockWidth/2,y:_lineBox.y+_strockWidth/2+_lineBox.height/2-_w/2-_strockWidth/2,width:_w,height:_w,"data-id":__actId,"data-fixedpoint_x":_lineBox.x2,"data-fixedpoint_y":_lineBox.y+_lineBox.height/2});
+    
+          rootState.Svg.select("#rotateLine").attr({d:`M${_lineBox.x2+_strockWidth/2} ${_lineBox.y+_strockWidth/2+_lineBox.height/2-_strockWidth/2}L${_lineBox.x2+_strockWidth/2 + 30} ${_lineBox.y+_strockWidth/2+_lineBox.height/2-_strockWidth/2}`});
+          rootState.Svg.select("#rotateBar").attr({cx:_lineBox.x2+_strockWidth/2 + 30,cy:_lineBox.y+_strockWidth/2+_lineBox.height/2-_strockWidth/2,r:5,"data-fixedpoint_x":_lineBox.cx,"data-fixedpoint_y":_lineBox.cy,"data-id":__actId});
+      }
   }
 }
 
