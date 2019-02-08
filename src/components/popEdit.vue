@@ -1,9 +1,9 @@
 <template>
-    <vue-draggable-resizable :w="220" :h="220" @dragging="onDrag" :parent="'.container'" :resizable="false" drag-cancel=".content">
+    <vue-draggable-resizable :w="popEdit.w" :h="popEdit.h" @dragging="onDrag" :parent="'.container'" :resizable="false" drag-cancel=".content">
         <section id="popEdit" v-show="isShow">
             <div class="head"></div>
             <div class="content">
-                <textarea name="" id="areaEdit" cols="30" rows="10"></textarea>
+                <textarea name="" id="areaEdit" @resize="resize"></textarea>
             </div>
         </section>
     </vue-draggable-resizable>
@@ -12,16 +12,15 @@
 
 export default {
   props:{
-    coordinateMove:{//鼠标移动
-      default:()=>{
-        return []
-      },
-      type:Array
-    }
+
   },
   data () {
     return {
         isShow:true,
+        popEdit:{
+            w:220,
+            h:160
+        }
     }
   },
   created(){
@@ -38,6 +37,10 @@ export default {
   },
   methods:{
     onDrag(){
+        
+    },
+    resize(e){
+        console.log(e);
         
     }
   }
@@ -56,10 +59,10 @@ export default {
         background-color: @backgroundColor;
         cursor: move;
     }
-    .areaEdit{
+    #areaEdit{
         display: inline-block;
         width: 100%;
-        max-width: 100%;
+        max-width: 220px;
     }
 }
 </style>
