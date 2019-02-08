@@ -1,7 +1,7 @@
 <template>
-      <section class="center">
+      <section class="center" ><!--contenteditable ="false"-->
         <svg id="svg" class="svg" @mousedown="mousedown" :class="selType" width="80%" height="80%" style="background-color: white;" xmlns="http://www.w3.org/2000/svg" version="1.1">
-          <svg id="canvas" width="100%" height="100%" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>
+          <svg id="canvas" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"></svg>
           <g id="_antBorder" data-id="" :class="{'showAnt':!showAnt}" style="vector-effect:non-scaling-stroke;">
             <path id="rotateLine" style="stroke:gray;stroke-width:1;vector-effect:non-scaling-stroke"></path>
             <circle class="_controlBar" data-type="rotateBar" id="rotateBar" cx="0" cy="0" r="2.5" stroke="black" stroke-width="0" fill="#00bf63" style="font-size:11px;vector-effect:non-scaling-stroke;"/>
@@ -112,7 +112,7 @@ export default {
     },
     coordinateMove:{
       handler(n,o){
-        this.draw({ event:{type:"mousemove"} });
+        this.draw(n[2]);
       },
       deep:true
     },
@@ -153,21 +153,47 @@ export default {
       _storeState.coordinateDown = [ e.pageX,e.pageY ,e];//记录鼠标按下的坐标....
       _storeState.coordinateOffsetDown = [ e.offsetX,e.offsetY ,e];
       _storeState.time = new Date().getTime();
+      this.draw(e);
       e.preventDefault();
     },
-    draw(obj){
+    draw(event){
       let _storeState = this.$store.state;
       switch(_storeState.drawType){
         case "xuanze":{//选择.....
           break;
         }
         case "wenzi":{//文字工具......
+          if( _storeState.draw.timer && event.type == "mousedown" ){
+              if( SVG.get(`id${_storeState.time}`) == null ){
+                // let c = Snap.fragment('<input type="text" value="333></input>');
+                // _storeState.Svg.append(c);
+                // let _text = _storeState.Draw.text("646464").attr({
+                //   width:100,
+                //   height:100,
+                //   stroke:"#ddd",
+                //   class:"read-write",
+                //   "stroke-width":1,
+                //   x:event.offsetX,
+                //   y:event.offsetY-15
+                // });
+                // _storeState.Draw.group().add(_text).attr({
+                //     fill:"none",
+                //     class:"gSvgItem",
+                //     id:'gid'+_storeState.time,
+                //     "data-type":"text",
+                //     "data-id":_storeState.time
+                // })
+                // this.$store.dispatch('bindFocusEvent');//以后聚焦显示蚂蚁线......
+                // this.$store.dispatch("addLayer",_storeState.time);
+                // this.$store.commit('addAnt',_storeState.time);//重绘蚂蚁线......
+              }
+          }      
           break;
         }
         case "xiantiao":{//线段
-          if( _storeState.draw.timer ){
+          if( _storeState.draw.timer && event.type == "mousemove" ){
               if( SVG.get(`id${_storeState.time}`) == null ){
-                let _line = _storeState.Draw.path(`M${_storeState.coordinateOffsetDown[0]-5} ${_storeState.coordinateOffsetDown[1]-5}L${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}`).attr({
+                let _line = _storeState.Draw.path(`M${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}L${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}`).attr({
                     stroke: _storeState.defaultConfig.stroke,
                     "stroke-width": _storeState.defaultConfig.strokeWidth,
                     class:"svgItem",
@@ -186,7 +212,7 @@ export default {
                 this.$store.dispatch("addLayer",_storeState.time);
               }else{
                 SVG.get(`id${_storeState.time}`).attr({
-                  d:`M${_storeState.coordinateOffsetDown[0]-5} ${_storeState.coordinateOffsetDown[1]-5}L${_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0]} ${_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]}`
+                  d:`M${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}L${_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0]} ${_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]}`
                 });
                 this.$store.commit('addAnt',_storeState.time);//重绘蚂蚁线......
               }
@@ -200,7 +226,7 @@ export default {
           break;
         }
         case "juxing1":{//矩形工具.....
-          if( _storeState.draw.timer ){
+          if( _storeState.draw.timer && event.type == "mousemove" ){
             if( SVG.get(`id${_storeState.time}`) == null ){
               let _rect = _storeState.Draw.path(`M${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}`).attr({
                   stroke: _storeState.defaultConfig.stroke,
@@ -337,5 +363,9 @@ export default {
 }
 .showAnt{
   display: none;
+}
+.read-write {
+    -webkit-user-modify: read-write;
+    user-modify: read-write;
 }
 </style>

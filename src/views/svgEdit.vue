@@ -6,6 +6,7 @@
       <center ref="center" :coordinateMove="coordinateMove" :sel-type="selType"></center>
       <right></right>
     </div>
+    <pop-edit ref="popEdit"></pop-edit>
   </section>
 </template>
 
@@ -14,13 +15,14 @@ import top from '@/components/svgEditTop.vue'
 import left from '@/components/svgEditLeft.vue'
 import right from '@/components/svgEditRight.vue'
 import center from '@/components/svgEditCenter.vue'
+import popEdit from '@/components/popEdit.vue'
 
 import axios from 'axios'
 import { VueMathjax } from 'vue-mathjax'
 export default {
   components: {
     'vue-mathjax': VueMathjax,
-    top,left,right,center
+    top,left,right,center,popEdit
   },
   data () {
     return {
@@ -50,8 +52,8 @@ export default {
     })    
     document.addEventListener('mousemove', (e)=> {
       e.preventDefault();      
-      _this.coordinateMove = [e.pageX,e.pageY];
-      _this.$store.state.coordinateMove = [e.pageX,e.pageY];
+      _this.coordinateMove = [e.pageX,e.pageY,e];
+      _this.$store.state.coordinateMove = [e.pageX,e.pageY,e];
     })     
     document.addEventListener('mouseup', (e)=> {
       _this.$refs.left.hid();

@@ -13,10 +13,14 @@ import "../public/font/iconfont.css";
 import "../public/font/iconfont.js";
 import 'svg.js'
 import 'svg.draggable.js'
+// require('./js/svg.foreignobject.js');
 // import 'svg.draw.js'
 // import 'svg.select.js'
 // import 'svg.resize.js'
 // import 'svg.select.js/dist/svg.select.min.css'
+import VueDraggableResizable from 'vue-draggable-resizable'
+// import 'vue-draggable-resizable.css'
+Vue.component('vue-draggable-resizable', VueDraggableResizable)
 Vue.prototype.Snap = Snap;
 
 Vue.config.productionTip = false;

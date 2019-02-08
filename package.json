@@ -19,6 +19,7 @@
     "svg.resize.js": "^1.4.2",
     "svg.select.js": "^3.0.1",
     "vue": "^2.5.21",
+    "vue-draggable-resizable": "^2.0.0-rc1",
     "vue-mathjax": "^0.0.5",
     "vue-router": "^3.0.1",
     "vuescroll": "^4.9.2",
