@@ -165,27 +165,28 @@ export default {
         case "wenzi":{//文字工具......
           if( _storeState.draw.timer && event.type == "mousedown" ){
               if( SVG.get(`id${_storeState.time}`) == null ){
-                // let c = Snap.fragment('<input type="text" value="333></input>');
-                // _storeState.Svg.append(c);
-                // let _text = _storeState.Draw.text("646464").attr({
-                //   width:100,
-                //   height:100,
-                //   stroke:"#ddd",
-                //   class:"read-write",
-                //   "stroke-width":1,
-                //   x:event.offsetX,
-                //   y:event.offsetY-15
-                // });
-                // _storeState.Draw.group().add(_text).attr({
-                //     fill:"none",
-                //     class:"gSvgItem",
-                //     id:'gid'+_storeState.time,
-                //     "data-type":"text",
-                //     "data-id":_storeState.time
-                // })
-                // this.$store.dispatch('bindFocusEvent');//以后聚焦显示蚂蚁线......
-                // this.$store.dispatch("addLayer",_storeState.time);
-                // this.$store.commit('addAnt',_storeState.time);//重绘蚂蚁线......
+                let _text = _storeState.Draw.plain("646464").attr({
+                  width:100,
+                  height:100,
+                  stroke:_storeState.defaultConfig.stroke,
+                  class:"svgItem",
+                  "stroke-width": 1,
+                  id:'id'+ _storeState.time,
+                  'data-id':_storeState.time,
+                  'data-type':"text",
+                  x:event.offsetX,
+                  y:event.offsetY-15
+                });
+                _storeState.Draw.group().add(_text).attr({
+                    fill:"none",
+                    class:"gSvgItem",
+                    id:'gid'+_storeState.time,
+                    "data-type":"text",
+                    "data-id":_storeState.time
+                })
+                this.$store.dispatch('bindFocusEvent');//以后聚焦显示蚂蚁线......
+                this.$store.dispatch("addLayer",_storeState.time);
+                this.$store.commit('addAnt',_storeState.time);//重绘蚂蚁线......
               }
           }      
           break;

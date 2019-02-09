@@ -90,6 +90,7 @@ export default {
           display: flex;
           flex-direction: column;
           background-color: #505050;
+          overflow: hidden;
           &:hover{
             
           }

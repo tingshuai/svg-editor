@@ -45,10 +45,30 @@ const actions = {
     if( rootState._matrix.toTransformString() != _m.toTransformString() ){
       state.layer.find((val,i,arr)=>{
         if( val.id == obj.id ){
-          let newPath = rootState.Snap.path.map(_ele.attr('d').toString(), rootState._matrix).toString()+"Z";
-          _ele.transform(_m).attr({d:newPath});//重置焦点元素matrix  将变换写入path..    
-          _gele.transform(_m);
+          if( _ele.type != "text" ){
+            let newPath = rootState.Snap.path.map(_ele.attr('d').toString(), rootState._matrix).toString()+"Z";
+            _ele.transform(_m).attr({d:newPath});//重置焦点元素matrix  将变换写入path..    
+            _gele.transform(_m);
+          }else{
+            if( obj.e.eventType == "dragMove" ){
+              _ele.attr({
+                x:Number( Number( _ele.attr("x") ) + rootState._matrix.e ),
+                y:Number( Number( _ele.attr("y") ) + rootState._matrix.f )
+              })
+            }else if( obj.e.eventType == "resize" ){
+              _ele.attr({
+                x:Number( Number( _ele.attr("x") ) + Number( _ele.matrix.e) ),
+                y:Number( Number( _ele.attr("y") ) + Number( _ele.matrix.f) ),
+              })
+              _ele.matrix.e = 0;
+              _ele.matrix.f = 0;
+              _ele.attr({
+                transform:_ele.matrix
+              })
+            }
+          }
           val.matrix = rootState._matrix;
+          val.boxMsg = _ele.getBBox();
         }
       });
       commit("addAnt");
@@ -76,6 +96,7 @@ const actions = {
       ele.drag();
       let onend = (e)=>{
         state.itemMoveMsg.state = "end";
+        e.eventType = "dragMove"
         this.dispatch("resizeEnd",{"e":e,"id":_dataset.id,"type":_dataset.type});
       }
       let onmove = (x,y,cx,cy,e)=>{
@@ -145,7 +166,11 @@ const actions = {
       let _id = null;
       let onend = (e)=>{
         e.stopPropagation();
-        this.dispatch("resizeEnd",{"e":e,"id":_id,"type":type});
+        e.eventType = "resize"
+        let _ele = SVG.get(`id${_id}`);
+        if(_ele.type == "path"){
+          this.dispatch("resizeEnd",{"e":e,"id":_id,"type":type});
+        }
       }
       let onmove = (x,y,cx,cy,e)=>{
         e.stopPropagation();
@@ -281,7 +306,7 @@ const mutations = {
     let _ele = rootState.Svg.select(`#id${obj.id}`);
     let _gele = rootState.Svg.select(`#gid${obj.id}`);
     let _antBorder = rootState.Svg.select("#_antBorder");
-    let _box = rootState.Snap.path.getBBox(_ele.realPath);
+    let _box = _ele.getBBox();
     rootState.actLayerId = obj.id;
     context.itemMoveMsg.x = obj.x;
     context.itemMoveMsg.y = obj.y;
@@ -321,20 +346,19 @@ const mutations = {
     }else{//都没按下
       _point = context.fixedPoint;
     }
-    
     if( obj.type == "rotateBar" ){//旋转....
       rootState._matrix = new Snap.Matrix();
       let _rotate = Snap.angle( context.fixedPoint[0],context.fixedPoint[1], obj.e.offsetX,obj.e.offsetY )-180;
       rootState._matrix.rotate( _rotate, context.fixedPoint[0],context.fixedPoint[1] );
-      _ele.transform( rootState._matrix );
-      rootState.Svg.select("#_antLine").attr({ d:_box.path.toString() });         
-      // _ele.transform( context.actItem.matrix.invert().add(rootState._matrix) );
     }else{
       rootState._matrix.scale(_rateX,_rateY,_point[0],_point[1]);
-      _ele.transform(rootState._matrix).attr({"vector-effect":"non-scaling-stroke"});
     }
-    // rootState.Svg.select("#demo_circle").attr({cx:`${_box.x}`,cy:`${_box.y}`,r:`${_box.r0}`,fill:`#${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}${Math.floor(Math.random()*100)}`})
-    this.dispatch("upLoadSvg");
+    if( _ele.type == "path"){
+      this.dispatch("upLoadSvg");
+    }else{
+      this.commit("addAnt")
+    }
+    _gele.transform(rootState._matrix).attr({"vector-effect":"non-scaling-stroke"});
   },
   addAnt(context,_id){//重绘控制点.....
       let rootState = this.getters.rootState;
@@ -350,7 +374,8 @@ const mutations = {
           state.actItem.strokeWidth=_strockWidth;
           state.actItem.strokeDasharray=_ele.attr("stroke-dasharray");
           state.actItem.strokeDashoffset=_ele.attr("stroke-dashoffset");
-    
+        rootState.Svg.paper.circle(_lineBox.x,_lineBox.y,2).attr({fill:"red"});
+
           rootState.Svg.select("#_antBorder").attr({'data-id':__actId});
           rootState.Svg.select("#_antLine").attr({d:`M${_lineBox.x-_strockWidth/2} ${_lineBox.y-_strockWidth/2}H${_lineBox.x2+_strockWidth/2}V${_lineBox.y2+_strockWidth/2}H${_lineBox.x-_strockWidth/2}Z`});
           let _w = 5;
