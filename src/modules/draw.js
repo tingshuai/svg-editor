@@ -184,6 +184,7 @@ const actions = {
         //定点坐标....
         state.fixedPoint[0] = Number(_dataset["fixedpoint_x"]);
         state.fixedPoint[1] = Number(_dataset["fixedpoint_y"]);
+        // rootState.Svg.paper.circle(state.fixedPoint[2],state.fixedPoint[3],2).attr({fill:"red"});
         if(_dataset.type == "rotateBar"){
           let _box = rootState.Svg.select(`#${_dataset.type}`).getBBox();
           state.fixedPoint[2] = _box.cx;
@@ -306,7 +307,7 @@ const mutations = {
     let _ele = rootState.Svg.select(`#id${obj.id}`);
     let _gele = rootState.Svg.select(`#gid${obj.id}`);
     let _antBorder = rootState.Svg.select("#_antBorder");
-    let _box = _ele.getBBox();
+    let _box = _ele.getBBox(),_rotate = 0;
     rootState.actLayerId = obj.id;
     context.itemMoveMsg.x = obj.x;
     context.itemMoveMsg.y = obj.y;
@@ -348,33 +349,49 @@ const mutations = {
     }
     if( obj.type == "rotateBar" ){//旋转....
       rootState._matrix = new Snap.Matrix();
-      let _rotate = Snap.angle( context.fixedPoint[0],context.fixedPoint[1], obj.e.offsetX,obj.e.offsetY )-180;
+      _rotate = Snap.angle( context.fixedPoint[0],context.fixedPoint[1], obj.e.offsetX,obj.e.offsetY )-180;
       rootState._matrix.rotate( _rotate, context.fixedPoint[0],context.fixedPoint[1] );
     }else{
       rootState._matrix.scale(_rateX,_rateY,_point[0],_point[1]);
     }
     if( _ele.type == "path"){
       this.dispatch("upLoadSvg");
+      _gele.transform(rootState._matrix).attr({"vector-effect":"non-scaling-stroke"});
     }else{
+      _gele.attr({
+        transform:`rotate(${_rotate} ${context.fixedPoint[0]},${context.fixedPoint[1]}) ${rootState._matrix}`
+      })
+      console.log(rootState._matrix,context.actItem.matrix);
       this.commit("addAnt")
     }
-    _gele.transform(rootState._matrix).attr({"vector-effect":"non-scaling-stroke"});
   },
   addAnt(context,_id){//重绘控制点.....
       let rootState = this.getters.rootState;
       let __actId = _id ? _id : rootState.actLayerId;
       rootState.showAnt = true;
       if(rootState.Svg.select(`#id${__actId}`) != null){
-          let _ele = rootState.Svg.select(`#id${__actId}`);
-          let _lineBox = _ele.getBBox();
-          let _strockWidth = Number( _ele.attr("stroke-width").replace('px',''))+2;
+          let _ele = SVG.get(`#id${__actId}`);
+          let _gele = SVG.get(`#gid${__actId}`);
+          let _lineBox = _ele.bbox();
+          let _viewBox;
+          if( _ele.type == "DIV" ){
+            _viewBox = SVG.get('svg').rbox();
+            _lineBox = _ele.rbox();
+            _lineBox.x = _lineBox.x - _viewBox.x;
+            _lineBox.y = _lineBox.y - _viewBox.y;
+            _lineBox.x2 = _lineBox.x2 - _viewBox.x;
+            _lineBox.y2 = _lineBox.y2 - _viewBox.y;
+            _lineBox.cx = _lineBox.cx - _viewBox.x;
+            _lineBox.cy = _lineBox.cy - _viewBox.y;
+          }
+          let _strockWidth = Number( _ele.attr("stroke-width"))+2;
           let _stroke = document.getElementById(`id${__actId}`).getAttribute("stroke")
           state.actItem.fill=_ele.attr("fill");
           state.actItem.stroke=_stroke;
           state.actItem.strokeWidth=_strockWidth;
           state.actItem.strokeDasharray=_ele.attr("stroke-dasharray");
           state.actItem.strokeDashoffset=_ele.attr("stroke-dashoffset");
-        rootState.Svg.paper.circle(_lineBox.x,_lineBox.y,2).attr({fill:"red"});
+        // rootState.Svg.paper.circle(_lineBox.x,_lineBox.y,2).attr({fill:"red"});
 
           rootState.Svg.select("#_antBorder").attr({'data-id':__actId});
           rootState.Svg.select("#_antLine").attr({d:`M${_lineBox.x-_strockWidth/2} ${_lineBox.y-_strockWidth/2}H${_lineBox.x2+_strockWidth/2}V${_lineBox.y2+_strockWidth/2}H${_lineBox.x-_strockWidth/2}Z`});

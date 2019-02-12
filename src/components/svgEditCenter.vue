@@ -2,6 +2,7 @@
       <section class="center" ><!--contenteditable ="false"-->
         <svg id="svg" class="svg" @mousedown="mousedown" :class="selType" width="80%" height="80%" style="background-color: white;" xmlns="http://www.w3.org/2000/svg" version="1.1">
           <svg id="canvas" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"></svg>
+        
           <g id="_antBorder" data-id="" :class="{'showAnt':!showAnt}" style="vector-effect:non-scaling-stroke;">
             <path id="rotateLine" style="stroke:gray;stroke-width:1;vector-effect:non-scaling-stroke"></path>
             <circle class="_controlBar" data-type="rotateBar" id="rotateBar" cx="0" cy="0" r="2.5" stroke="black" stroke-width="0" fill="#00bf63" style="font-size:11px;vector-effect:non-scaling-stroke;"/>
@@ -15,6 +16,7 @@
             <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="cursor:ns-resize;stroke-width: 1; cursor: ne-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
             <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
           </g>
+
         </svg>
         <div class="posiMsg" :style="{'left':dragPosition.x +'px','top':dragPosition.y + 'px'}" v-if="movePosition.show">
           <section class="part part1">
@@ -48,6 +50,7 @@ export default {
   },  
   data () {
     return {
+      formula:"",
       moveType:"",
       dragPosition:{
         x:0,
@@ -82,6 +85,7 @@ export default {
     }
   },
   mounted(){
+    this.formula =  "$${\\frac{[Hg^2+][Hg]}{[co2^2+]}}$$";
     Svg = this.Snap('#svg');
     let _storeState = this.$store.state;
     _storeState.Svg = this.Snap("#svg");
@@ -165,24 +169,29 @@ export default {
         case "wenzi":{//文字工具......
           if( _storeState.draw.timer && event.type == "mousedown" ){
               if( SVG.get(`id${_storeState.time}`) == null ){
-                let _text = _storeState.Draw.plain("646464").attr({
-                  width:100,
-                  height:100,
-                  stroke:_storeState.defaultConfig.stroke,
-                  class:"svgItem",
-                  "stroke-width": 1,
-                  id:'id'+ _storeState.time,
-                  'data-id':_storeState.time,
-                  'data-type':"text",
-                  x:event.offsetX,
-                  y:event.offsetY-15
-                });
-                _storeState.Draw.group().add(_text).attr({
+                let _text = _storeState.Draw.foreignObject().attr({
                     fill:"none",
                     class:"gSvgItem",
                     id:'gid'+_storeState.time,
                     "data-type":"text",
-                    "data-id":_storeState.time
+                    "data-id":_storeState.time,
+                    "stroke-width": 1,
+                    stroke:_storeState.defaultConfig.stroke,
+                    x:event.offsetX,
+                    y:event.offsetY-15                
+                });
+                _text.appendChild("div", {
+                  innerText: "33333",
+                  id:'id'+ _storeState.time,
+                })
+                $(`#id${_storeState.time}`).attr({
+                  class:"svgItem",
+                  'data-id':_storeState.time,
+                  'data-type':"text",
+                  "font-size":'12px'
+                }).css({
+                  "text-align":"left",
+                  "display":"inline-block"
                 })
                 this.$store.dispatch('bindFocusEvent');//以后聚焦显示蚂蚁线......
                 this.$store.dispatch("addLayer",_storeState.time);
