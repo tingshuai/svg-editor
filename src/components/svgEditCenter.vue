@@ -177,22 +177,29 @@ export default {
                     "data-id":_storeState.time,
                     "stroke-width": 1,
                     stroke:_storeState.defaultConfig.stroke,
+                    width:0,
+                    height:0,
                     x:event.offsetX,
-                    y:event.offsetY-15                
+                    y:event.offsetY
                 });
                 _text.appendChild("div", {
-                  innerText: "33333",
-                  id:'id'+ _storeState.time,
+                  innerText: " ",
+                  id:'id'+ _storeState.time
                 })
                 $(`#id${_storeState.time}`).attr({
                   class:"svgItem",
                   'data-id':_storeState.time,
                   'data-type':"text",
-                  "font-size":'12px'
+                  "font-size":'12px',
                 }).css({
                   "text-align":"left",
+                  "white-space": "nowrap",
                   "display":"inline-block"
                 })
+                _storeState.popEditPosition.value = '';
+                _storeState.popEditPosition.isShow = true;
+                _storeState.popEditPosition.x = event.offsetX ;
+                _storeState.popEditPosition.y = event.offsetY ;
                 this.$store.dispatch('bindFocusEvent');//以后聚焦显示蚂蚁线......
                 this.$store.dispatch("addLayer",_storeState.time);
                 this.$store.commit('addAnt',_storeState.time);//重绘蚂蚁线......

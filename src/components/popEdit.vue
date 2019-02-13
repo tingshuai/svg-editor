@@ -1,9 +1,9 @@
 <template>
-    <vue-draggable-resizable v-show="isShow" :w="popEdit.w" :h="popEdit.h" @dragging="onDrag" :parent="'.container'" :resizable="false" drag-cancel=".content">
+    <vue-draggable-resizable v-show="$store.state.popEditPosition.isShow" :x="$store.state.popEditPosition.x" :y="$store.state.popEditPosition.y" :w="popEdit.w" :h="popEdit.h" @dragging="onDrag" :parent="'.container'" :resizable="false" drag-cancel=".content">
         <section id="popEdit">
             <div class="head"></div>
             <div class="content">
-                <textarea name="" id="areaEdit" @resize="resize"></textarea>
+                <textarea name="" @input="inputIng" id="areaEdit" @resize="resize" v-model="$store.state.popEditPosition.value"></textarea>
             </div>
         </section>
     </vue-draggable-resizable>
@@ -16,7 +16,6 @@ export default {
   },
   data () {
     return {
-        isShow:false,
         popEdit:{
             w:220,
             h:160
@@ -27,7 +26,7 @@ export default {
 
   },
   computed:{
-  
+    
   },
   mounted(){
     let that = this;  
@@ -47,7 +46,15 @@ export default {
     },
     resize(e){
         console.log(e);
-        
+    },
+    inputIng(e){
+        let _rootState = this.$store.state;
+        let _rect = $(`#id${_rootState.actLayerId}`).text(_rootState.popEditPosition.value).get(0).getBoundingClientRect();
+        $(`#gid${_rootState.actLayerId}`).attr({
+            width:_rect.width,
+            height:_rect.height
+        })
+        this.$store.commit("addAnt")
     }
   }
 }

@@ -24,6 +24,12 @@ export default new Vuex.Store({
     defaultConfig:{
       strokeWidth:5,
       stroke:"#000"
+    },
+    popEditPosition:{//输入框是否显示.....
+      x:0,
+      y:0,
+      value:"",
+      isShow:false
     }
   },
   mutations: {

@@ -45,16 +45,20 @@ const actions = {
     if( rootState._matrix.toTransformString() != _m.toTransformString() ){
       state.layer.find((val,i,arr)=>{
         if( val.id == obj.id ){
-          if( _ele.type != "text" ){
+          if( _ele.type != "DIV" ){
             let newPath = rootState.Snap.path.map(_ele.attr('d').toString(), rootState._matrix).toString()+"Z";
             _ele.transform(_m).attr({d:newPath});//重置焦点元素matrix  将变换写入path..    
             _gele.transform(_m);
           }else{
             if( obj.e.eventType == "dragMove" ){
-              _ele.attr({
-                x:Number( Number( _ele.attr("x") ) + rootState._matrix.e ),
-                y:Number( Number( _ele.attr("y") ) + rootState._matrix.f )
-              })
+              _gele.attr({
+                x:Number( Number( _gele.attr("x") ) + Number(rootState._matrix.e) ),
+                y:Number( Number( _gele.attr("y") ) + Number(rootState._matrix.f) )
+              });
+              rootState._matrix.e = 0;
+              rootState._matrix.f = 0;
+              _gele.transform(rootState._matrix);
+              
             }else if( obj.e.eventType == "resize" ){
               _ele.attr({
                 x:Number( Number( _ele.attr("x") ) + Number( _ele.matrix.e) ),
@@ -85,6 +89,15 @@ const actions = {
         let _dataset = e.currentTarget.dataset;
         rootState.actLayerId = _dataset.id;//更新活动元素ID
         commit("addAnt");//添加蚂蚁线
+        if( val.type == "DIV" ){
+          let _viewBox = $("#popEdit").get(0).getBoundingClientRect();
+          rootState.popEditPosition.isShow = true;
+          rootState.popEditPosition.x = e.clientX - _viewBox.width - 20;
+          rootState.popEditPosition.y = e.clientY - _viewBox.height - 20;
+          rootState.popEditPosition.value = $(`#id${_dataset.id}`).text();
+        }else{
+          rootState.popEditPosition.isShow = false;
+        }
       });
     })
   },   
