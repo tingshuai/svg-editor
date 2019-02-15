@@ -215,6 +215,7 @@ export default {
 .left{
   width: 80px;
   border-top: 1px solid gray;   
+  flex-shrink:0;
   ul{
       display: flex;
       justify-content: center;

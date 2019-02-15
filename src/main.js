@@ -4,7 +4,6 @@ import router from "./router";
 import store from "./store";
 import "./registerServiceWorker";
 import vuescroll from "vuescroll";
-import "vuescroll/dist/vuescroll.css";
 import "./axios";
 import VueMathjax from 'vue-mathjax'
 import Snap from "imports-loader?this=>window,fix=>module.exports=0!snapsvg/dist/snap.svg.js";
@@ -25,26 +24,6 @@ Vue.component('vue-draggable-resizable', VueDraggableResizable)
 Vue.prototype.Snap = Snap;
 
 Vue.config.productionTip = false;
-
-Vue.use(vuescroll, {
-  ops: {
-    vuescroll: {
-      mode: "slide",
-      zooming: false
-    },
-    rail: {
-      background: "",
-      size: "15px"
-    },
-    bar: {
-      keepShow: true,
-      size: "8px"
-    },
-    scrollButton: {
-      enable: true
-    }
-  } // 在这里设置全局默认配置
-});
 
 window.MathJax.Ajax.config.path["mhchem"] = "https://cdnjs.cloudflare.com/ajax/libs/mathjax-mhchem/3.3.0";
 window.MathJax.Hub.Config({

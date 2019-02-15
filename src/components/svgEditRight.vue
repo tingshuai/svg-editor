@@ -39,6 +39,7 @@ export default {
   width: 300px;
   display: flex;
   justify-content: space-between;
+  flex-shrink:0;
   .history,.layer{
     flex-grow: 1;
     background-color: #333;

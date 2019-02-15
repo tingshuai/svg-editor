@@ -1,23 +1,25 @@
 <template>
-      <section class="center" ><!--contenteditable ="false"-->
-        <svg id="svg" class="svg" @mousedown="mousedown" :class="selType" width="80%" height="80%" style="background-color: white;" xmlns="http://www.w3.org/2000/svg" version="1.1">
-          <svg id="canvas" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"></svg>
-        
-          <g id="_antBorder" data-id="" :class="{'showAnt':!showAnt}" style="vector-effect:non-scaling-stroke;">
-            <path id="rotateLine" style="stroke:gray;stroke-width:1;vector-effect:non-scaling-stroke"></path>
-            <circle class="_controlBar" data-type="rotateBar" id="rotateBar" cx="0" cy="0" r="2.5" stroke="black" stroke-width="0" fill="#00bf63" style="font-size:11px;vector-effect:non-scaling-stroke;"/>
-            <path id="_antLine" stroke="#00bf63" d="" fill="none"style="vector-effect:non-scaling-stroke;stroke-dasharray: 2, 2; stroke-dashoffset: 0;" ></path>
-            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareLT" data-type="squareLT" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCT" data-type="squareCT" style="cursor:ns-resize;stroke-width: 1; cursor: ns-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareRT" data-type="squareRT" style="cursor:ne-resize;stroke-width: 1; cursor: ne-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCR" data-type="squareCR" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBR" data-type="squareBR" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBC" data-type="squareBC" style="cursor:nw-resize;stroke-width: 1; cursor: ns-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="cursor:ns-resize;stroke-width: 1; cursor: ne-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-            <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-          </g>
-
-        </svg>
+      <section class="center" id="wrapDraw"><!--contenteditable ="false"-->
+          <vuescroll ref="vs" :opsvg="opsvg" @handle-resize="handleResize">
+              <svg id="svg" class="svg" @mousewheel="mousewheel" @mousedown="mousedown" @handle-resize="handleResize" :class="selType" style="" xmlns="http://www.w3.org/2000/svg" version="1.1">
+                <svg id="canvas" xmlns="http://www.w3.org/2000/svg">
+                  <rect id="contentBg"></rect>
+                </svg>
+                <g id="_antBorder" data-id="" :class="{'showAnt':!showAnt}" style="vector-effect:non-scaling-stroke;">
+                  <path id="rotateLine" style="stroke:gray;stroke-width:1;vector-effect:non-scaling-stroke"></path>
+                  <circle class="_controlBar" data-type="rotateBar" id="rotateBar" cx="0" cy="0" r="2.5" stroke="black" stroke-width="0" fill="#00bf63" style="font-size:11px;vector-effect:non-scaling-stroke;"/>
+                  <path id="_antLine" stroke="#00bf63" d="" fill="none"style="vector-effect:non-scaling-stroke;stroke-dasharray: 2, 2; stroke-dashoffset: 0;" ></path>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareLT" data-type="squareLT" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCT" data-type="squareCT" style="cursor:ns-resize;stroke-width: 1; cursor: ns-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareRT" data-type="squareRT" style="cursor:ne-resize;stroke-width: 1; cursor: ne-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCR" data-type="squareCR" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBR" data-type="squareBR" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBC" data-type="squareBC" style="cursor:nw-resize;stroke-width: 1; cursor: ns-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="cursor:ns-resize;stroke-width: 1; cursor: ne-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                </g>
+              </svg>
+          </vuescroll>
         <div class="posiMsg" :style="{'left':dragPosition.x +'px','top':dragPosition.y + 'px'}" v-if="movePosition.show">
           <section class="part part1">
             <span class="posiType"><i :class="movePosition.isRight" class="iconfont icon-zhiding"></i>： </span>
@@ -32,6 +34,7 @@
 </template>
 <script>
 let Svg;
+import vuescroll from 'vuescroll';
 export default {
   props:{
     selType:{
@@ -46,7 +49,7 @@ export default {
     }
   },
   components: {
-    
+    vuescroll
   },  
   data () {
     return {
@@ -62,6 +65,35 @@ export default {
         show:false,
         isUp:"toUp",
         isRight:"toRight"
+      },
+      ratio:{
+        rate:0
+      },
+      opsvg:{
+          vuescroll: {
+            mode: "native",
+            zooming: false,
+            sizeStrategy:"number"
+          },
+          rail: {
+            background: "",
+            size: "15px",
+            gutterOfEnds:"0px",
+            gutterOfSide:"0px"
+          },
+          scrollPanel:{
+            initialScrollY:true,
+            initialScrollX:true,
+            scrollLeft:0,
+            scrollTop:0
+          },
+          bar: {
+            keepShow: true,
+            size: "8px"
+          },
+          scrollButton: {
+            enable: true
+          }
       }
     }
   },
@@ -96,6 +128,13 @@ export default {
     this.$store.dispatch("bindFocusEvent");
     this.$store.dispatch("bindDrag");
     this.$store.dispatch("bindResize");
+    this.$store.commit("initViewBox");
+    document.addEventListener('keypress', (e)=> {
+      if( e.keyCode == 32){
+        
+      }
+      e.preventDefault();
+    })    
     // _storeState.Svg.paper.circle(0,0,5).attr({id:'demo_circle'});
   },
   watch:{
@@ -150,6 +189,65 @@ export default {
     }
   },
   methods:{
+    handleResize(vertical, horizontal, nativeEvent){
+      let _boxSvg = $('#wrapDraw').get(0).getBoundingClientRect();
+      this.$refs['vs'].scrollTo({
+          x: (nativeEvent.height - _boxSvg.height)/2/nativeEvent.height*_boxSvg.height,
+          y: (nativeEvent.width - _boxSvg.width)/2/nativeEvent.width*_boxSvg.width
+      }, false)      
+    },
+    mousewheel(e){
+      let _wheel ={value:''};
+      let _boxSvg = $('#wrapDraw').get(0).getBoundingClientRect();
+
+      if(e.wheelDelta){   // IE/Opera/Chrome
+          _wheel.value = e.wheelDelta;
+      }else if(e.detail){ // Firefox
+          _wheel.value = e.detail;
+      }
+      if(e.altKey){//放大.....
+        if(_wheel.value>0){
+          this.ratio.rate +=20;
+        }else{
+          this.ratio.rate -=20;
+        }
+        let _w = (_boxSvg.width+_boxSvg.width*this.ratio.rate/_boxSvg.width)*2/3, _h = (_boxSvg.height+_boxSvg.height*this.ratio.rate/_boxSvg.height)*2/3;
+        if(_w > _boxSvg.width){
+          SVG.get('svg').attr({
+            width:_w
+          });     
+          SVG.get('canvas').attr({
+            width:_w,
+            x:0
+          })
+        }else{
+          SVG.get('svg').attr({
+            width:_boxSvg.width
+          });            
+          SVG.get('canvas').attr({
+            width:_w,
+            x:(_boxSvg.width-_w)/2,
+          })
+        }
+        if(_h > _boxSvg.height){
+          SVG.get('svg').attr({
+            height:_h-4
+          });            
+          SVG.get('canvas').attr({
+            height:_h,
+            y:0,
+          })                  
+        }else{
+          SVG.get('svg').attr({
+            height:_boxSvg.height-4
+          });            
+          SVG.get('canvas').attr({
+            height:_h,
+            y:(_boxSvg.height-_h)/2,
+          })
+        }    
+      }
+    },
     mousedown(e){
       let that = this;
       let _storeState = this.$store.state;
@@ -169,7 +267,10 @@ export default {
         case "wenzi":{//文字工具......
           if( _storeState.draw.timer && event.type == "mousedown" ){
               if( SVG.get(`id${_storeState.time}`) == null ){
-                let _text = _storeState.Draw.foreignObject().attr({
+                let _group = _storeState.Draw.group().attr({
+                  id:'textId'+_storeState.time
+                });
+                _group.foreignObject().attr({
                     fill:"none",
                     class:"gSvgItem",
                     id:'gid'+_storeState.time,
@@ -181,8 +282,7 @@ export default {
                     height:0,
                     x:event.offsetX,
                     y:event.offsetY
-                });
-                _text.appendChild("div", {
+                }).appendChild("div", {
                   innerText: " ",
                   id:'id'+ _storeState.time
                 })
@@ -304,7 +404,16 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  position:absolute;
+  left:80px;
+  right:300px;
+  bottom:0;
+  height:100%;
   .svg{
+    transition:all 0.3s;
+    #canvas{
+      transition:all 0.3s;
+    }
     .actItem{
       .gSvgItem.antBorder{
         

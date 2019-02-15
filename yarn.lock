@@ -6227,9 +6227,11 @@ vue@^2.5.21:
   version "2.5.21"
   resolved "http://registry.npm.taobao.org/vue/download/vue-2.5.21.tgz#3d33dcd03bb813912ce894a8303ab553699c4a85"
 
-vuescroll@^4.9.2:
-  version "4.9.3"
-  resolved "https://registry.yarnpkg.com/vuescroll/-/vuescroll-4.9.3.tgz#e4f4d8ce2acfd2233261794f8f057d79c1777796"
+vuescroll@^4.10.5, vuescroll@^4.9.7-rc.2:
+  version "4.10.5"
+  resolved "https://registry.yarnpkg.com/vuescroll/-/vuescroll-4.10.5.tgz#483d1333509efa9b65747aafe3167a8c92b62126"
+  dependencies:
+    vuescroll "^4.9.7-rc.2"
 
 vuex@^3.0.1:
   version "3.0.1"

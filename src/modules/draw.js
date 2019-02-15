@@ -50,26 +50,26 @@ const actions = {
             _ele.transform(_m).attr({d:newPath});//重置焦点元素matrix  将变换写入path..    
             _gele.transform(_m);
           }else{
-            if( obj.e.eventType == "dragMove" ){
-              _gele.attr({
-                x:Number( Number( _gele.attr("x") ) + Number(rootState._matrix.e) ),
-                y:Number( Number( _gele.attr("y") ) + Number(rootState._matrix.f) )
-              });
-              rootState._matrix.e = 0;
-              rootState._matrix.f = 0;
-              _gele.transform(rootState._matrix);
+            // if( obj.e.eventType == "dragMove" ){
+            //   _gele.attr({
+            //     x:Number( Number( _gele.attr("x") ) + Number(rootState._matrix.e) ),
+            //     y:Number( Number( _gele.attr("y") ) + Number(rootState._matrix.f) )
+            //   });
+            //   rootState._matrix.e = 0;
+            //   rootState._matrix.f = 0;
+            //   _gele.transform(rootState._matrix);
               
-            }else if( obj.e.eventType == "resize" ){
-              _ele.attr({
-                x:Number( Number( _ele.attr("x") ) + Number( _ele.matrix.e) ),
-                y:Number( Number( _ele.attr("y") ) + Number( _ele.matrix.f) ),
-              })
-              _ele.matrix.e = 0;
-              _ele.matrix.f = 0;
-              _ele.attr({
-                transform:_ele.matrix
-              })
-            }
+            // }else if( obj.e.eventType == "resize" ){
+            //   _ele.attr({
+            //     x:Number( Number( _ele.attr("x") ) + Number( _ele.matrix.e) ),
+            //     y:Number( Number( _ele.attr("y") ) + Number( _ele.matrix.f) ),
+            //   })
+            //   _ele.matrix.e = 0;
+            //   _ele.matrix.f = 0;
+            //   _ele.attr({
+            //     transform:_ele.matrix
+            //   })
+            // }
           }
           val.matrix = rootState._matrix;
           val.boxMsg = _ele.getBBox();
@@ -298,7 +298,12 @@ const mutations = {
   setActItem(context){//设定焦点元素的boxmsg
     let rootState = this.getters.rootState;
     return context.layer.filter((item,index,arr)=>{
-      let _box = rootState.Svg.select(`#id${item.id}`).getBBox();
+      let _box;
+      if( SVG.get(`id${item.id}`).type == "DIV" ){
+        _box = SVG.get(`#textId${item.id}`).bbox();
+      }else{
+        _box = SVG.get(`id${item.id}`).bbox();
+      }
       item.boxMsg = _box;
       item.boxMsg.x = _box.x - item.strokeWidth/2;
       item.boxMsg.y = _box.y - item.strokeWidth/2;
@@ -320,12 +325,17 @@ const mutations = {
     let _ele = rootState.Svg.select(`#id${obj.id}`);
     let _gele = rootState.Svg.select(`#gid${obj.id}`);
     let _antBorder = rootState.Svg.select("#_antBorder");
-    let _box = _ele.getBBox(),_rotate = 0;
+    let _box,_rotate = 0,_gbox;
+    if( SVG.get(`id${obj.id}`).type == "DIV" ){
+      _box = SVG.get(`textId${obj.id}`).gbox();
+    }else{
+      _box = SVG.get(`id${obj.id}`).bbox();
+    }    
     rootState.actLayerId = obj.id;
     context.itemMoveMsg.x = obj.x;
     context.itemMoveMsg.y = obj.y;
     rootState._matrix = new Snap.Matrix();
-    let _rateX,_rateY,_point=[];
+    let _rateX=1,_rateY=1,_point=[];
     if( obj.type == "squareLT" ){
       _rateX = (_box.width-obj.x)/_box.width;
       _rateY = (_box.height-obj.y)/_box.height;
@@ -371,10 +381,13 @@ const mutations = {
       this.dispatch("upLoadSvg");
       _gele.transform(rootState._matrix).attr({"vector-effect":"non-scaling-stroke"});
     }else{
-      _gele.attr({
-        transform:`rotate(${_rotate} ${context.fixedPoint[0]},${context.fixedPoint[1]}) ${rootState._matrix}`
-      })
-      console.log(rootState._matrix,context.actItem.matrix);
+      // _gele.attr({
+      //   transform:`rotate(${_rotate} ${context.fixedPoint[0]},${context.fixedPoint[1]}) ${rootState._matrix}`
+      // })
+      // SVG.get(`gid${obj.id}`).transform({rotation: `${_rotate} ${context.fixedPoint[0]} ${context.fixedPoint[1]}`});
+      $(`#textId${obj.id}`).get(0).setAttribute("transform", `rotate(${_rotate} ${context.fixedPoint[0]} ${context.fixedPoint[1]}) translate(${-_point[0]} ${-_point[1]})
+      scale(${_rateX} ${_rateY}) translate(${_point[0]} ${_point[1]})`);
+      console.log(555, `${_point[0]} ${_point[1]}`);
       this.commit("addAnt")
     }
   },
