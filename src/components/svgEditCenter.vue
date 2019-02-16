@@ -1,9 +1,9 @@
 <template>
       <section class="center" id="wrapDraw"><!--contenteditable ="false"-->
           <vuescroll ref="vs" :opsvg="opsvg" @handle-resize="handleResize">
-              <svg id="svg" class="svg" @mousewheel="mousewheel" @mousedown="mousedown" @handle-resize="handleResize" :class="selType" style="" xmlns="http://www.w3.org/2000/svg" version="1.1">
-                <svg id="canvas" xmlns="http://www.w3.org/2000/svg">
-                  <rect id="contentBg"></rect>
+              <svg id="svg" class="svg" @mousemove="svgMove" @mousewheel="mousewheel" :class="selType" :style="{'cursor':svgStyle.cursor}" xmlns="http://www.w3.org/2000/svg" version="1.1">
+                <svg id="canvas" xmlns="http://www.w3.org/2000/svg" @mousedown.stop="mousedown">
+                  <rect id="contentBg" style="pointer-events:all;"></rect>
                 </svg>
                 <g id="_antBorder" data-id="" :class="{'showAnt':!showAnt}" style="vector-effect:non-scaling-stroke;">
                   <path id="rotateLine" style="stroke:gray;stroke-width:1;vector-effect:non-scaling-stroke"></path>
@@ -54,12 +54,11 @@ export default {
   data () {
     return {
       formula:"",
-      moveType:"",
-      dragPosition:{
+      dragPosition:{//绘制pop 位置信息...
         x:0,
         y:0
       },
-      movePosition:{
+      movePosition:{//绘制pop 位置方向提示....
         x:0,
         y:0,
         show:false,
@@ -67,9 +66,12 @@ export default {
         isRight:"toRight"
       },
       ratio:{
-        rate:0
+        rate:0//放大的长度
       },
-      opsvg:{
+      svgStyle:{//svg上的鼠标样式
+        cursor:"default"
+      },
+      opsvg:{//滚动条配置....
           vuescroll: {
             mode: "native",
             zooming: false,
@@ -104,7 +106,7 @@ export default {
     coordinateClientMove(){
       return this.$store.state.draw.itemMoveMsg;
     },
-    showAnt:{
+    showAnt:{//是否显示蚂蚁线...
       get () {
         return this.$store.state.showAnt
       }
@@ -130,11 +132,23 @@ export default {
     this.$store.dispatch("bindResize");
     this.$store.commit("initViewBox");
     document.addEventListener('keypress', (e)=> {
-      if( e.keyCode == 32){
-        
+      if( e.keyCode == 32 ){
+        this.opsvg.vuescroll.mode = "slide";
+        this.svgStyle.cursor = "-webkit-grab";
+        this.$refs['vs'].refresh()
+      }else{
+        this.opsvg.vuescroll.mode = "native";
+        this.svgStyle.cursor = "default";
       }
       e.preventDefault();
-    })    
+    })  
+    document.addEventListener('keyup', (e)=> {
+      if( e.keyCode == 18 || e.keyCode == 32 ){//alt键...
+        this.svgStyle.cursor = "default";
+      }
+      e.preventDefault();
+    })          
+
     // _storeState.Svg.paper.circle(0,0,5).attr({id:'demo_circle'});
   },
   watch:{
@@ -189,6 +203,11 @@ export default {
     }
   },
   methods:{
+    svgMove(e){
+      if( !e.altKey && this.svgStyle.cursor != "default"){
+        this.svgStyle.cursor = "default"
+      }
+    },
     handleResize(vertical, horizontal, nativeEvent){
       let _boxSvg = $('#wrapDraw').get(0).getBoundingClientRect();
       this.$refs['vs'].scrollTo({
@@ -196,56 +215,46 @@ export default {
           y: (nativeEvent.width - _boxSvg.width)/2/nativeEvent.width*_boxSvg.width
       }, false)      
     },
-    mousewheel(e){
+    mousewheel(e){//鼠标滚轮放大.....
       let _wheel ={value:''};
       let _boxSvg = $('#wrapDraw').get(0).getBoundingClientRect();
-
-      if(e.wheelDelta){   // IE/Opera/Chrome
-          _wheel.value = e.wheelDelta;
-      }else if(e.detail){ // Firefox
-          _wheel.value = e.detail;
-      }
+      let _boxCanvas = $('#canvas').get(0).getBoundingClientRect();
+      let _step = 40;//滚动放大步长.....
+      e.wheelDelta ? _wheel.value = e.wheelDelta : _wheel.value = e.detail;
       if(e.altKey){//放大.....
-        if(_wheel.value>0){
-          this.ratio.rate +=20;
-        }else{
-          this.ratio.rate -=20;
-        }
-        let _w = (_boxSvg.width+_boxSvg.width*this.ratio.rate/_boxSvg.width)*2/3, _h = (_boxSvg.height+_boxSvg.height*this.ratio.rate/_boxSvg.height)*2/3;
-        if(_w > _boxSvg.width){
-          SVG.get('svg').attr({
-            width:_w
-          });     
-          SVG.get('canvas').attr({
-            width:_w,
-            x:0
+        let _oldRate;
+        let promise = new Promise((resolve,reject)=>{
+          _wheel.value > 0 ? this.svgStyle.cursor = "zoom-in" : this.svgStyle.cursor = "zoom-out";
+          if( _wheel.value > 0 ){
+            this.ratio.rate +=_step;
+            _oldRate = this.ratio.rate - _step;
+            resolve();
+          }else{
+            if( (_boxCanvas.width > 100) && (_boxCanvas.height > 100) ){//控制不能无限缩小.....
+              this.ratio.rate -=_step;
+              _oldRate = this.ratio.rate + _step;
+              resolve();
+            }
+          }
+        })
+        promise.then(()=>{
+          let _w = (_boxSvg.width+this.ratio.rate)*2/3, _h = (_boxSvg.height+this.ratio.rate)*2/3;
+          let _oldW = (_boxSvg.width+_oldRate)*2/3, _oldH = (_boxSvg.height+_oldRate)*2/3;
+          SVG.get('svg').animate(50,'<>').during((pos, morph, eased, situation)=>{
+            SVG.get('svg').attr({
+              width:_w > _boxSvg.width ? morph(_oldW,_w) : _boxSvg.width,
+              height:_h > _boxSvg.height ? morph(_oldH,_h) : _boxSvg.height-4
+            })
+            SVG.get('canvas').attr({
+              width: morph(_oldW,_w),
+              height:morph(_oldH,_h),
+              x:_w > _boxSvg.width ? 0 : morph((_boxSvg.width-_oldW)/2,(_boxSvg.width-_w)/2),
+              y:_h > _boxSvg.height ? 0 : morph((_boxSvg.height-_oldH)/2,(_boxSvg.height-_h)/2)
+            })
           })
-        }else{
-          SVG.get('svg').attr({
-            width:_boxSvg.width
-          });            
-          SVG.get('canvas').attr({
-            width:_w,
-            x:(_boxSvg.width-_w)/2,
-          })
-        }
-        if(_h > _boxSvg.height){
-          SVG.get('svg').attr({
-            height:_h-4
-          });            
-          SVG.get('canvas').attr({
-            height:_h,
-            y:0,
-          })                  
-        }else{
-          SVG.get('svg').attr({
-            height:_boxSvg.height-4
-          });            
-          SVG.get('canvas').attr({
-            height:_h,
-            y:(_boxSvg.height-_h)/2,
-          })
-        }    
+        })
+      }else if(this.svgStyle.cursor != "default"){
+        this.svgStyle.cursor = "default";
       }
     },
     mousedown(e){
@@ -253,7 +262,8 @@ export default {
       let _storeState = this.$store.state;
       _storeState.draw.timer = true;//绘画开始.....
       _storeState.coordinateDown = [ e.pageX,e.pageY ,e];//记录鼠标按下的坐标....
-      _storeState.coordinateOffsetDown = [ e.offsetX,e.offsetY ,e];
+      let _canvasBox = SVG.get('canvas');
+      _storeState.coordinateOffsetDown = [ e.offsetX - _canvasBox.x() , e.offsetY - _canvasBox.y() , e ];
       _storeState.time = new Date().getTime();
       this.draw(e);
       e.preventDefault();
@@ -409,10 +419,11 @@ export default {
   right:300px;
   bottom:0;
   height:100%;
+  transition:transform 500ms cubic-bezier(0.92, -0.06, 0.24, 0.92);
   .svg{
-    transition:all 0.3s;
+ 
     #canvas{
-      transition:all 0.3s;
+      
     }
     .actItem{
       .gSvgItem.antBorder{
