@@ -36,13 +36,20 @@ export default new Vuex.Store({
     initViewBox(context){
       let _boxSvg = $('#wrapDraw').get(0).getBoundingClientRect();
       let _w = _boxSvg.width*2/3, _h = _boxSvg.height*2/3;
-      $('#svg').css({
-        top:(_boxSvg.height-_h)/2,
-        left:(_boxSvg.width-_w)/2,
-      }).attr({
+      SVG.get('svg').attr({
+        width:_boxSvg.width,
+        height:_boxSvg.height-4
+      });
+      SVG.get('canvas').attr({
         width:_w,
         height:_h,
-        // viewBox:`0,0,${_w},${_h}`
+        x:(_boxSvg.width-_w)/2,
+        y:(_boxSvg.height-_h)/2,
+      }).viewbox(0,0,_w,_h);
+      SVG.get('contentBg').attr({
+        width:_w,
+        height:_h,
+        fill:"white"
       })
     }
   },
