@@ -260,17 +260,18 @@ export default {
     mousedown(e){
       let that = this;
       let _storeState = this.$store.state;
+      let _rates = 1/SVG.get('canvas').viewbox().zoom;
       _storeState.draw.timer = true;//绘画开始.....
       _storeState.coordinateDown = [ e.pageX,e.pageY ,e];//记录鼠标按下的坐标....
       let _canvasBox = SVG.get('canvas');
-      _storeState.coordinateOffsetDown = [ e.offsetX - _canvasBox.x() , e.offsetY - _canvasBox.y() , e ];
+      _storeState.coordinateOffsetDown = [ (e.offsetX - _canvasBox.x())*_rates , (e.offsetY - _canvasBox.y())*_rates , e ];
       _storeState.time = new Date().getTime();
       this.draw(e);
       e.preventDefault();
     },
     draw(event){
       let _storeState = this.$store.state;
-      switch(_storeState.drawType){
+      switch( _storeState.drawType ){
         case "xuanze":{//选择.....
           break;
         }
@@ -326,7 +327,6 @@ export default {
                     class:"svgItem",
                     id:'id'+ _storeState.time,
                     'data-id':_storeState.time,
-                    "vector-effect":"non-scaling-stroke",
                     'data-type':"line"
                 });
                 _storeState.Draw.group().add(_line).attr({
@@ -358,7 +358,6 @@ export default {
             if( SVG.get(`id${_storeState.time}`) == null ){
               let _rect = _storeState.Draw.path(`M${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}`).attr({
                   stroke: _storeState.defaultConfig.stroke,
-                  "stroke-width": _storeState.defaultConfig.strokeWidth,
                   class:"svgItem",
                   "vector-effect":"non-scaling-stroke",
                   "stroke-miterlimit":10,

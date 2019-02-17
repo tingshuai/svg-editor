@@ -387,7 +387,6 @@ const mutations = {
       // SVG.get(`gid${obj.id}`).transform({rotation: `${_rotate} ${context.fixedPoint[0]} ${context.fixedPoint[1]}`});
       $(`#textId${obj.id}`).get(0).setAttribute("transform", `rotate(${_rotate} ${context.fixedPoint[0]} ${context.fixedPoint[1]}) translate(${-_point[0]} ${-_point[1]})
       scale(${_rateX} ${_rateY}) translate(${_point[0]} ${_point[1]})`);
-      console.log(555, `${_point[0]} ${_point[1]}`);
       this.commit("addAnt")
     }
   },
