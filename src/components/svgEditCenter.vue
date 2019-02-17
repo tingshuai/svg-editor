@@ -1,23 +1,22 @@
 <template>
       <section class="center" id="wrapDraw"><!--contenteditable ="false"-->
           <vuescroll ref="vs" :opsvg="opsvg" @handle-resize="handleResize">
-              <svg id="svg" class="svg" @mousemove="svgMove" @mousewheel="mousewheel" :class="selType" :style="{'cursor':svgStyle.cursor}" xmlns="http://www.w3.org/2000/svg" version="1.1">
-                <svg id="canvas" xmlns="http://www.w3.org/2000/svg" @mousedown.stop="mousedown">
-                  <rect id="contentBg" style="pointer-events:all;"></rect>
-                  <g id="_antBorder" data-id="" :class="{'showAnt':!showAnt}" style="vector-effect:non-scaling-stroke;">
-                    <path id="rotateLine" style="stroke:gray;stroke-width:1;vector-effect:non-scaling-stroke"></path>
-                    <circle class="_controlBar" data-type="rotateBar" id="rotateBar" cx="0" cy="0" r="2.5" stroke="black" stroke-width="0" fill="#00bf63" style="font-size:11px;vector-effect:non-scaling-stroke;"/>
-                    <path id="_antLine" stroke="#00bf63" d="" fill="none"style="vector-effect:non-scaling-stroke;stroke-dasharray: 2, 2; stroke-dashoffset: 0;" ></path>
-                    <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareLT" data-type="squareLT" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-                    <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCT" data-type="squareCT" style="cursor:ns-resize;stroke-width: 1; cursor: ns-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-                    <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareRT" data-type="squareRT" style="cursor:ne-resize;stroke-width: 1; cursor: ne-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-                    <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCR" data-type="squareCR" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-                    <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBR" data-type="squareBR" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
                     <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBC" data-type="squareBC" style="cursor:nw-resize;stroke-width: 1; cursor: ns-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-                    <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="cursor:ns-resize;stroke-width: 1; cursor: ne-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-                    <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
-                  </g>
-                </svg>
+              <svg id="svg" class="svg" @mousemove="svgMove" @mousedown.stop="mousedown" @mousewheel="mousewheel" :class="selType" :style="{'cursor':svgStyle.cursor}" xmlns="http://www.w3.org/2000/svg" version="1.1">
+                <svg id="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
+                <g id="_antBorder" data-id="" :class="{'showAnt':!showAnt}" style="vector-effect:non-scaling-stroke;">
+                  <path id="rotateLine" style="stroke:gray;stroke-width:1;vector-effect:non-scaling-stroke"></path>
+                  <circle class="_controlBar" data-type="rotateBar" id="rotateBar" cx="0" cy="0" r="2.5" stroke="black" stroke-width="0" fill="#00bf63" style="font-size:11px;vector-effect:non-scaling-stroke;"/>
+                  <path id="_antLine" stroke="#00bf63" d="" fill="none"style="vector-effect:non-scaling-stroke;stroke-dasharray: 2, 2; stroke-dashoffset: 0;" ></path>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareLT" data-type="squareLT" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCT" data-type="squareCT" style="cursor:ns-resize;stroke-width: 1; cursor: ns-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareRT" data-type="squareRT" style="cursor:ne-resize;stroke-width: 1; cursor: ne-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCR" data-type="squareCR" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBR" data-type="squareBR" style="cursor:nw-resize;stroke-width: 1; cursor: nw-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBC" data-type="squareBC" style="cursor:nw-resize;stroke-width: 1; cursor: ns-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBL" data-type="squareBL" style="cursor:ns-resize;stroke-width: 1; cursor: ne-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                  <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareCL" data-type="squareCL" style="cursor:ew-resize;stroke-width: 1; cursor: ew-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
+                </g>
               </svg>
           </vuescroll>
         <div class="posiMsg" :style="{'left':dragPosition.x +'px','top':dragPosition.y + 'px'}" v-if="movePosition.show">
@@ -87,7 +86,8 @@ export default {
             initialScrollY:true,
             initialScrollX:true,
             scrollLeft:0,
-            scrollTop:0
+            scrollTop:0,
+            speed:50
           },
           bar: {
             keepShow: true,
@@ -211,14 +211,14 @@ export default {
     handleResize(vertical, horizontal, nativeEvent){
       let _boxSvg = $('#wrapDraw').get(0).getBoundingClientRect();
       this.$refs['vs'].scrollTo({
-          x: (nativeEvent.height - _boxSvg.height)/2/nativeEvent.height*_boxSvg.height,
-          y: (nativeEvent.width - _boxSvg.width)/2/nativeEvent.width*_boxSvg.width
-      }, false)      
+        x: "50%",
+        y: "50%"
+      })
     },
     mousewheel(e){//鼠标滚轮放大.....
       let _wheel ={value:''};
-      let _boxSvg = $('#wrapDraw').get(0).getBoundingClientRect();
-      let _boxCanvas = $('#canvas').get(0).getBoundingClientRect();
+      let _boxWrapDraw = $('#wrapDraw').get(0).getBoundingClientRect();
+      let _boxSvg = $('#svg').get(0).getBoundingClientRect();
       let _step = 40;//滚动放大步长.....
       e.wheelDelta ? _wheel.value = e.wheelDelta : _wheel.value = e.detail;
       if(e.altKey){//放大.....
@@ -230,7 +230,7 @@ export default {
             _oldRate = this.ratio.rate - _step;
             resolve();
           }else{
-            if( (_boxCanvas.width > 100) && (_boxCanvas.height > 100) ){//控制不能无限缩小.....
+            if( (_boxSvg.width > 100) && (_boxSvg.height > 100) ){//控制不能无限缩小.....
               this.ratio.rate -=_step;
               _oldRate = this.ratio.rate + _step;
               resolve();
@@ -238,19 +238,23 @@ export default {
           }
         })
         promise.then(()=>{
-          let _w = (_boxSvg.width+this.ratio.rate)*2/3, _h = (_boxSvg.height+this.ratio.rate)*2/3;
-          let _oldW = (_boxSvg.width+_oldRate)*2/3, _oldH = (_boxSvg.height+_oldRate)*2/3;
-          SVG.get('svg').animate(50,'<>').during((pos, morph, eased, situation)=>{
-            SVG.get('svg').attr({
-              width:_w > _boxSvg.width ? morph(_oldW,_w) : _boxSvg.width,
-              height:_h > _boxSvg.height ? morph(_oldH,_h) : _boxSvg.height-4
-            })
-            SVG.get('canvas').attr({
-              width: morph(_oldW,_w),
-              height:morph(_oldH,_h),
-              x:_w > _boxSvg.width ? 0 : morph((_boxSvg.width-_oldW)/2,(_boxSvg.width-_w)/2),
-              y:_h > _boxSvg.height ? 0 : morph((_boxSvg.height-_oldH)/2,(_boxSvg.height-_h)/2)
-            })
+          let _w = (_boxWrapDraw.width+this.ratio.rate)*2/3, _h = (_boxWrapDraw.height+this.ratio.rate)*2/3;
+          let _oldW = (_boxWrapDraw.width+_oldRate)*2/3, _oldH = (_boxWrapDraw.height+_oldRate)*2/3;
+          $('#svg').animate({
+            width:_w ,
+            height:_h,
+            left: _w > _boxWrapDraw.width ? 0 : (_boxWrapDraw.width-_w)/2,
+            top: _h > _boxWrapDraw.height ? 0 : (_boxWrapDraw.height-_h)/2
+          },{
+            duration:50,
+            step(now,tween){
+              console.log("step----",now,tween);
+            },
+            progress(a,b,c){
+              $('#svg').attr({
+                // viewBox:`0,0,${_w},${_h}`
+              })
+            }
           })
         })
       }else if(this.svgStyle.cursor != "default"){
@@ -262,8 +266,7 @@ export default {
       let _storeState = this.$store.state;
       _storeState.draw.timer = true;//绘画开始.....
       _storeState.coordinateDown = [ e.pageX,e.pageY ,e];//记录鼠标按下的坐标....
-      let _canvasBox = SVG.get('canvas');
-      _storeState.coordinateOffsetDown = [ e.offsetX - _canvasBox.x() , e.offsetY - _canvasBox.y() , e ];
+      _storeState.coordinateOffsetDown = [ e.offsetX , e.offsetY , e ];
       _storeState.time = new Date().getTime();
       this.draw(e);
       e.preventDefault();
@@ -421,8 +424,10 @@ export default {
   bottom:0;
   height:100%;
   transition:transform 500ms cubic-bezier(0.92, -0.06, 0.24, 0.92);
+  text-align: left;
   .svg{
- 
+    background: white;
+    position: relative;
     #canvas{
       
     }
