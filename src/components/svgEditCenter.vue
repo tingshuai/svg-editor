@@ -328,7 +328,6 @@ export default {
                     class:"svgItem",
                     id:'id'+ _storeState.time,
                     'data-id':_storeState.time,
-                    "vector-effect":"non-scaling-stroke",
                     'data-type':"line"
                 });
                 _storeState.Draw.group().add(_line).attr({
