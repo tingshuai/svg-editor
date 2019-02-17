@@ -1,7 +1,6 @@
 <template>
       <section class="center" id="wrapDraw"><!--contenteditable ="false"-->
           <vuescroll ref="vs" :opsvg="opsvg" @handle-resize="handleResize">
-                    <rect x="0" y="0" width="5" height="5" rx="0" ry="0" stroke="#00bf63" fill="#00bf63" id="squareBC" data-type="squareBC" style="cursor:nw-resize;stroke-width: 1; cursor: ns-resize;vector-effect:non-scaling-stroke" class="_controlBar" title="缩放"></rect>
               <svg id="svg" class="svg" @mousemove="svgMove" @mousedown.stop="mousedown" @mousewheel="mousewheel" :class="selType" :style="{'cursor':svgStyle.cursor}" xmlns="http://www.w3.org/2000/svg" version="1.1">
                 <svg id="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
                 <g id="_antBorder" data-id="" :class="{'showAnt':!showAnt}" style="vector-effect:non-scaling-stroke;">
