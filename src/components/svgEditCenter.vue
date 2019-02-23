@@ -1,8 +1,8 @@
 <template>
       <section class="center" id="wrapDraw"><!--contenteditable ="false"-->
-          <vuescroll ref="vs" :opsvg="opsvg" @handle-resize="handleResize">
+          <vuescroll ref="vs" :opsvg="opsvg" @handle-resize="handleResize" @handle-scroll="handleScroll">
               <svg id="svg" class="svg" @mousemove="svgMove" @mousewheel="mousewheel" :class="selType" :style="{'cursor':svgStyle.cursor}" xmlns="http://www.w3.org/2000/svg" version="1.1">
-                <svg id="canvas" xmlns="http://www.w3.org/2000/svg" @mousedown.stop="mousedown">
+                <svg id="canvas" xmlns="http://www.w3.org/2000/svg" @mousedown="mousedown">
                   <rect id="contentBg" style="pointer-events:all;"></rect>
                   <g id="_antBorder" data-id="" :class="{'showAnt':!showAnt}" style="vector-effect:non-scaling-stroke;">
                     <path id="rotateLine" style="stroke:gray;stroke-width:1;vector-effect:non-scaling-stroke"></path>
@@ -65,12 +65,15 @@ export default {
         isUp:"toUp",
         isRight:"toRight"
       },
-      ratio:{
-        rate:0//放大的长度
-      },
       svgStyle:{//svg上的鼠标样式
         cursor:"default"
       },
+      wheel:{
+        value:null,
+        step:40,
+        rate:0
+      },
+      svgMouseDownCoor:[],//鼠标在svg上点击时的坐标.....
       opsvg:{//滚动条配置....
           vuescroll: {
             mode: "native",
@@ -133,11 +136,9 @@ export default {
     this.$store.commit("initViewBox");
     document.addEventListener('keypress', (e)=> {
       if( e.keyCode == 32 ){
-        this.opsvg.vuescroll.mode = "slide";
         this.svgStyle.cursor = "-webkit-grab";
         this.$refs['vs'].refresh()
       }else{
-        this.opsvg.vuescroll.mode = "native";
         this.svgStyle.cursor = "default";
       }
       e.preventDefault();
@@ -211,34 +212,40 @@ export default {
     handleResize(vertical, horizontal, nativeEvent){
       let _boxSvg = $('#wrapDraw').get(0).getBoundingClientRect();
       this.$refs['vs'].scrollTo({
-          x: (nativeEvent.height - _boxSvg.height)/2/nativeEvent.height*_boxSvg.height,
-          y: (nativeEvent.width - _boxSvg.width)/2/nativeEvent.width*_boxSvg.width
-      }, false)      
+          x: vertical.scrollLeft,
+          y: horizontal.scrollTop
+      }, false);
+      // console.log( vertical, horizontal, nativeEvent );
+    },
+    handleScroll(vertical, horizontal, nativeEvent) {
     },
     mousewheel(e){//鼠标滚轮放大.....
-      let _wheel ={value:''};
       let _boxSvg = $('#wrapDraw').get(0).getBoundingClientRect();
       let _boxCanvas = $('#canvas').get(0).getBoundingClientRect();
       let _step = 40;//滚动放大步长.....
-      e.wheelDelta ? _wheel.value = e.wheelDelta : _wheel.value = e.detail;
-      if(e.altKey){//放大.....
+      e.wheelDelta ? this.wheel.value = e.wheelDelta : this.wheel.value = e.detail;
+      if( this.wheel.value > 0 ){
+        this.svgStyle.cursor = "zoom-in";
+      }else{
+        this.svgStyle.cursor = "zoom-out"
+      }
+      if(e.altKey){//按下alt键.........
         let _oldRate;
         let promise = new Promise((resolve,reject)=>{
-          _wheel.value > 0 ? this.svgStyle.cursor = "zoom-in" : this.svgStyle.cursor = "zoom-out";
-          if( _wheel.value > 0 ){
-            this.ratio.rate +=_step;
-            _oldRate = this.ratio.rate - _step;
-            resolve();
-          }else{
+          if( this.wheel.value > 0 ){//放大.....
+            this.wheel.rate += this.wheel.step;
+            _oldRate = this.wheel.rate -  this.wheel.step;
+            resolve( this.wheel );
+          }else{//缩小......
             if( (_boxCanvas.width > 100) && (_boxCanvas.height > 100) ){//控制不能无限缩小.....
-              this.ratio.rate -=_step;
-              _oldRate = this.ratio.rate + _step;
-              resolve();
+              this.wheel.rate -= this.wheel.step;
+              _oldRate = this.wheel.rate +  this.wheel.step;
+              resolve( this.wheel );
             }
           }
         })
-        promise.then(()=>{
-          let _w = (_boxSvg.width+this.ratio.rate)*2/3, _h = (_boxSvg.height+this.ratio.rate)*2/3;
+        promise.then((wheel)=>{
+          let _w = (_boxSvg.width+this.wheel.rate)*2/3, _h = (_boxSvg.height+this.wheel.rate)*2/3;
           let _oldW = (_boxSvg.width+_oldRate)*2/3, _oldH = (_boxSvg.height+_oldRate)*2/3;
           SVG.get('svg').animate(50,'<>').during((pos, morph, eased, situation)=>{
             SVG.get('svg').attr({
@@ -262,15 +269,19 @@ export default {
       let _storeState = this.$store.state;
       let _rates = 1/SVG.get('canvas').viewbox().zoom;
       _storeState.draw.timer = true;//绘画开始.....
-      _storeState.coordinateDown = [ e.pageX,e.pageY ,e];//记录鼠标按下的坐标....
-      let _canvasBox = SVG.get('canvas');
-      _storeState.coordinateOffsetDown = [ (e.offsetX - _canvasBox.x())*_rates , (e.offsetY - _canvasBox.y())*_rates , e ];
+      _storeState.coordinateDown = [ e.pageX,e.pageY ,e ];//记录鼠标按下的坐标....
+      let _canvasBox = SVG.get('canvas').rbox();
+      this.svgMouseDownCoor = [( e.pageX - _canvasBox.x )*_rates , ( e.pageY - _canvasBox.y )*_rates , e ];
       _storeState.time = new Date().getTime();
       this.draw(e);
       e.preventDefault();
     },
     draw(event){
       let _storeState = this.$store.state;
+      let _rates = 1/SVG.get('canvas').viewbox().zoom;
+      let _canvasBox = SVG.get('contentBg').rbox();
+      let _canvasMove = [ ( _storeState.coordinateMove[0] - _canvasBox.x )*_rates , ( _storeState.coordinateMove[1] - _canvasBox.y )*_rates ];
+      
       switch( _storeState.drawType ){
         case "xuanze":{//选择.....
           break;
@@ -321,7 +332,7 @@ export default {
         case "xiantiao":{//线段
           if( _storeState.draw.timer && event.type == "mousemove" ){
               if( SVG.get(`id${_storeState.time}`) == null ){
-                let _line = _storeState.Draw.path(`M${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}L${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}`).attr({
+                let _line = _storeState.Draw.path(`M${this.svgMouseDownCoor[0]} ${this.svgMouseDownCoor[1]}L${_canvasMove[0]} ${_canvasMove[1]}`).attr({
                     stroke: _storeState.defaultConfig.stroke,
                     "stroke-width": _storeState.defaultConfig.strokeWidth,
                     class:"svgItem",
@@ -336,11 +347,11 @@ export default {
                     "data-type":"line",
                     "data-id":_storeState.time
                 })
-                this.$store.dispatch('bindFocusEvent');//以后聚焦显示蚂蚁线......
-                this.$store.dispatch("addLayer",_storeState.time);
+                this.$store.dispatch( 'bindFocusEvent' );//以后聚焦显示蚂蚁线......
+                this.$store.dispatch( "addLayer", _storeState.time );
               }else{
                 SVG.get(`id${_storeState.time}`).attr({
-                  d:`M${_storeState.coordinateOffsetDown[0]} ${_storeState.coordinateOffsetDown[1]}L${_storeState.coordinateMove[0] - _storeState.coordinateDown[0] + _storeState.coordinateOffsetDown[0]} ${_storeState.coordinateMove[1] - _storeState.coordinateDown[1] + _storeState.coordinateOffsetDown[1]}`
+                  d:`M${this.svgMouseDownCoor[0]} ${this.svgMouseDownCoor[1]}L${_canvasMove[0]} ${_canvasMove[1]}`
                 });
                 this.$store.commit('addAnt',_storeState.time);//重绘蚂蚁线......
               }
