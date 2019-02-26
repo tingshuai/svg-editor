@@ -49,7 +49,7 @@ export default {
     },
     inputIng(e){
         let _rootState = this.$store.state;
-        let _rect = $(`#id${_rootState.actLayerId}`).text(_rootState.popEditPosition.value).get(0).getBoundingClientRect();
+        let _rect = $(`#id${_rootState.actLayerId}`).html(_rootState.popEditPosition.value).get(0).getBoundingClientRect();
         $(`#gid${_rootState.actLayerId}`).attr({
             width:_rect.width,
             height:_rect.height

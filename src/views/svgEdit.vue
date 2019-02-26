@@ -53,7 +53,7 @@ export default {
     document.addEventListener('mousemove', (e)=> {
       e.preventDefault();      
       _this.coordinateMove = [e.pageX,e.pageY,e];
-      _this.$store.state.coordinateMove = [e.pageX,e.pageY,e];
+      _this.$store.state.coordinateMove = [ e.pageX,e.pageY,e ];
     })     
     document.addEventListener('mouseup', (e)=> {
       _this.$refs.left.hid();

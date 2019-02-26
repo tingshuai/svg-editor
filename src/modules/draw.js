@@ -23,7 +23,8 @@ const state = {
     "strokeDashoffset":0,
     boxMsg:null,//保存变动时的图形的box信息....
     matrix:null,
-    consBoxMsg:null
+    consBoxMsg:null,
+    rbox:null
   },
   fixedPoint:[],//变换时的定点坐标......
 } 
@@ -197,8 +198,7 @@ const actions = {
         //定点坐标....
         state.fixedPoint[0] = Number(_dataset["fixedpoint_x"]);
         state.fixedPoint[1] = Number(_dataset["fixedpoint_y"]);
-        // rootState.Svg.paper.circle(state.fixedPoint[2],state.fixedPoint[3],2).attr({fill:"red"});
-        if(_dataset.type == "rotateBar"){
+        if( _dataset.type == "rotateBar" ){
           let _box = rootState.Svg.select(`#${_dataset.type}`).getBBox();
           state.fixedPoint[2] = _box.cx;
           state.fixedPoint[3] = _box.cy;
@@ -206,6 +206,7 @@ const actions = {
         state.layer.find((val,i,arr)=>{
           if( val.id == _id ){
             state.actItem.matrix = val.matrix;
+            state.actItem.rbox = SVG.get(`gid${_id}`).rbox();
           }
         });
         rootState.coordinateOffsetDown[0] = e.offsetX;
@@ -385,9 +386,11 @@ const mutations = {
       //   transform:`rotate(${_rotate} ${context.fixedPoint[0]},${context.fixedPoint[1]}) ${rootState._matrix}`
       // })
       // SVG.get(`gid${obj.id}`).transform({rotation: `${_rotate} ${context.fixedPoint[0]} ${context.fixedPoint[1]}`});
-      $(`#textId${obj.id}`).get(0).setAttribute("transform", `rotate(${_rotate} ${context.fixedPoint[0]} ${context.fixedPoint[1]}) translate(${-_point[0]} ${-_point[1]})
-      scale(${_rateX} ${_rateY}) translate(${_point[0]} ${_point[1]})`);
-      this.commit("addAnt")
+      console.log( context.actItem.rbox,SVG.get(`gid${obj.id}`).rbox() );
+      let _rbox = SVG.get(`gid${obj.id}`).rbox();
+      let _oldRbox = context.actItem.rbox;
+      $(`#textId${obj.id}`).get(0).setAttribute("transform", `translate(${_point[0]} ${_point[1]}) scale(${_rateX} ${_rateY}) translate(${-_point[0]} ${-_point[1]})`);
+      this.commit( "addAnt" );
     }
   },
   addAnt(context,_id){//重绘控制点.....
@@ -400,14 +403,7 @@ const mutations = {
           let _lineBox = _ele.bbox();
           let _viewBox;
           if( _ele.type == "DIV" ){
-            _viewBox = SVG.get('svg').rbox();
-            _lineBox = _ele.rbox();
-            _lineBox.x = _lineBox.x - _viewBox.x;
-            _lineBox.y = _lineBox.y - _viewBox.y;
-            _lineBox.x2 = _lineBox.x2 - _viewBox.x;
-            _lineBox.y2 = _lineBox.y2 - _viewBox.y;
-            _lineBox.cx = _lineBox.cx - _viewBox.x;
-            _lineBox.cy = _lineBox.cy - _viewBox.y;
+            _lineBox = SVG.get(`textId${__actId}`).bbox();
           }
           let _strockWidth = Number( _ele.attr("stroke-width"))+2;
           let _stroke = document.getElementById(`id${__actId}`).getAttribute("stroke")

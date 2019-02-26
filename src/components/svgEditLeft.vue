@@ -144,7 +144,6 @@ export default {
         if( e.keyCode == 65 || e.keyCode == 84 || e.keyCode == 76 || e.keyCode == 80 || e.keyCode ==77 || e.keyCode == 66 || e.keyCode == 79 || e.keyCode == 69 || e.keyCode == 67){
             this.toggleMe(e.keyCode)
         }
-        e.preventDefault();
     })
   },
   watch:{

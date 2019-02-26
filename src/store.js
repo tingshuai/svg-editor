@@ -47,8 +47,8 @@ export default new Vuex.Store({
         y:(_boxSvg.height-_h)/2,
       }).viewbox(0,0,_w,_h);
       SVG.get('contentBg').attr({
-        width:_w,
-        height:_h,
+        width:"100%",
+        height:"100%",
         fill:"white"
       })
     }
@@ -57,6 +57,10 @@ export default new Vuex.Store({
 
   },
   getters: {
-    
+    getSvgPosi: (state) => (posi) => {//将屏幕坐标转换成canvas坐标........
+      let _rates = 1/SVG.get('canvas').viewbox().zoom;
+      let _canvasBox = SVG.get('contentBg').rbox();
+      return [ ( posi[0] - _canvasBox.x )*_rates , ( posi[1] - _canvasBox.y )*_rates ,posi[2]];
+    }
   }
 });
