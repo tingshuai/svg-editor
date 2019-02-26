@@ -286,12 +286,12 @@ export default {
           if( _storeState.draw.timer && event.type == "mousedown" ){
               if( SVG.get(`id${_storeState.time}`) == null ){
                 let _group = _storeState.Draw.group().attr({
-                  id:'textId'+_storeState.time
+                  id:'gid'+_storeState.time
                 });
                 _group.foreignObject().attr({
                     fill:"none",
                     class:"gSvgItem",
-                    id:'gid'+_storeState.time,
+                    id:'id'+_storeState.time,
                     "data-type":"text",
                     "data-id":_storeState.time,
                     "stroke-width": 1,
@@ -302,9 +302,9 @@ export default {
                     y:this.svgMouseDownCoor[1]
                 }).appendChild("div", {
                   innerText: " ",
-                  id:'id'+ _storeState.time
+                  id:'textId'+ _storeState.time
                 })
-                $(`#id${_storeState.time}`).attr({
+                $(`#textId${_storeState.time}`).attr({
                   class:"svgItem",
                   'data-id':_storeState.time,
                   'data-type':"text",

@@ -49,8 +49,9 @@ export default {
     },
     inputIng(e){
         let _rootState = this.$store.state;
-        let _rect = $(`#id${_rootState.actLayerId}`).html(_rootState.popEditPosition.value).get(0).getBoundingClientRect();
-        $(`#gid${_rootState.actLayerId}`).attr({
+        let _rect = $(`#textId${_rootState.actLayerId}`).html(_rootState.popEditPosition.value).get(0).getBoundingClientRect();
+        console.log( $(`#textId${_rootState.actLayerId}`).html(),_rect );
+        SVG.get(`id${_rootState.actLayerId}`).attr({
             width:_rect.width,
             height:_rect.height
         })

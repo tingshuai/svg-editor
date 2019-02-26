@@ -13,7 +13,6 @@ const state = {
     cx:"",
     cy:"",
     e:"",
-    state:""
   },
   actItem:{
     "fill":"none",
@@ -43,42 +42,16 @@ const actions = {
     let _m = new Snap.Matrix();
     rootState.Svg.selectAll("g.referenceLine").remove();//清除referenceLine 对齐线
     let _antBorder = rootState.Svg.select("#_antBorder");
-    if( rootState._matrix.toTransformString() != _m.toTransformString() ){
-      state.layer.find((val,i,arr)=>{
-        if( val.id == obj.id ){
-          if( _ele.type != "DIV" ){
-            let newPath = rootState.Snap.path.map(_ele.attr('d').toString(), rootState._matrix).toString()+"Z";
-            _ele.transform(_m).attr({d:newPath});//重置焦点元素matrix  将变换写入path..    
-            _gele.transform(_m);
-          }else{
-            // if( obj.e.eventType == "dragMove" ){
-            //   _gele.attr({
-            //     x:Number( Number( _gele.attr("x") ) + Number(rootState._matrix.e) ),
-            //     y:Number( Number( _gele.attr("y") ) + Number(rootState._matrix.f) )
-            //   });
-            //   rootState._matrix.e = 0;
-            //   rootState._matrix.f = 0;
-            //   _gele.transform(rootState._matrix);
-              
-            // }else if( obj.e.eventType == "resize" ){
-            //   _ele.attr({
-            //     x:Number( Number( _ele.attr("x") ) + Number( _ele.matrix.e) ),
-            //     y:Number( Number( _ele.attr("y") ) + Number( _ele.matrix.f) ),
-            //   })
-            //   _ele.matrix.e = 0;
-            //   _ele.matrix.f = 0;
-            //   _ele.attr({
-            //     transform:_ele.matrix
-            //   })
-            // }
-          }
-          val.matrix = rootState._matrix;
-          val.boxMsg = _ele.getBBox();
-        }
-      });
-      commit("addAnt");
-      rootState._matrix = new Snap.Matrix();
+    if( _ele.type == "path" ){
+      let newPath = rootState.Snap.path.map( _ele.attr('d').toString(),_gele.transform().localMatrix ).toString()+"Z";
+      _ele.attr({d:newPath});
+      console.log(_gele.transform().localMatrix);
+    }else if( _ele.type == "DIV" ){
+      
+    }else{
+
     }
+    SVG.get(`gid${obj.id}`).scale(1,1).translate(0,0);
   },
   bindFocusEvent({ state, commit, rootState }){
     if(rootState.actLayerId != null){//判断是否有焦点....
@@ -102,62 +75,23 @@ const actions = {
       });
     })
   },   
-  bindDrag({ state, commit, rootState }){
-    let that = this;
+  bindDrag({ state, commit, rootState ,rootGetters}){
     rootState.Svg.selectAll(".gSvgItem").forEach((ele,i,arr)=>{
-      let _dataset;
-      let _ele,_gele,_boxMsg;
-      ele.drag();
-      let onend = (e)=>{
-        state.itemMoveMsg.state = "end";
-        e.eventType = "dragMove"
-        this.dispatch("resizeEnd",{"e":e,"id":_dataset.id,"type":_dataset.type});
-      }
+      let _dataset,_boxMsg;
+      let onend = (e)=>{}
       let onmove = (x,y,cx,cy,e)=>{
-        if( e.shiftKey ){//按住shift 横移竖直移动.....
-          Math.abs(x) > Math.abs(y) ? y = 0 : x = 0; 
-          _gele.attr({"transform":new Snap.Matrix(1,0,0,1,x,y)})
-        }
-        e.eventType = "resize";
-        state.itemMoveMsg.x = x;
-        state.itemMoveMsg.y = y;
-        state.itemMoveMsg.cx = cx;
-        state.itemMoveMsg.cy = cy;
-        state.itemMoveMsg.e = e;
-        state.itemMoveMsg.state = "move";
-        rootState.showAnt = false;
-        rootState._matrix.e = x;
-        rootState._matrix.f = y;
-        // 移动时更新焦点图形的box信息.....
-        state.actItem.boxMsg.x = state.actItem.consBoxMsg.x + x;
-        state.actItem.boxMsg.y = state.actItem.consBoxMsg.y + y;
-        state.actItem.boxMsg.cx = state.actItem.consBoxMsg.cx + x;
-        state.actItem.boxMsg.cy = state.actItem.consBoxMsg.cy + y;
-        state.actItem.boxMsg.x2 = state.actItem.consBoxMsg.x2 + x;
-        state.actItem.boxMsg.y2 = state.actItem.consBoxMsg.y2 + y;
-
-        if(!e.ctrlKey){//当ctrl键按下时不计算对齐标记线....
-          this.dispatch("computeLine",e);
-        }
+        if( e.shiftKey ){  Math.abs(x) > Math.abs(y) ? y = 0 : x = 0; }//按住shift 横移竖直移动.....
+        let _posi = rootGetters.getMove([x,y,e]);//获取svg上的实际位移
+        let _lineRate = rootGetters.getSvgPosi([_boxMsg.x,_boxMsg.y,e]);//获取svg上的实际坐标......
+        SVG.get(`id${_dataset.id}`).move(_posi[0] + _lineRate[0] , _posi[1] + _lineRate[1]);//开始移动....
+        e.ctrlKey ? null : this.dispatch("computeLine",e);//显示参考线......
       }
       let onstart = (cx,cy,e)=>{
-        state.itemMoveMsg.cx = cx;
-        state.itemMoveMsg.cy = cy;
-        state.itemMoveMsg.state = "start";
         _dataset = e.srcElement.dataset;
-        _ele = rootState.Svg.select(`#id${_dataset.id}`);
-        _gele = rootState.Svg.select(`#gid${_dataset.id}`);
-        rootState._matrix = new Snap.Matrix(1,0,0,1,0,0);
+        _boxMsg = SVG.get(`gid${_dataset.id}`).rbox();
         commit("setActItem");
       }
-      ele.drag(onmove, onstart, onend);
-    });
-    rootState.Svg.selectAll(".svgItem").forEach((ele,i,arr)=>{
-      ele.hover((e)=>{
-        ele.attr({
-          cursor:"move"
-        })
-      });
+      ele.drag(onmove, onstart, onend).attr({ cursor:"move" });
     });
   },
   addLayer({ state, commit, rootState },_id){
@@ -380,15 +314,8 @@ const mutations = {
     }
     if( _ele.type == "path"){
       this.dispatch("upLoadSvg");
-      _gele.transform(rootState._matrix).attr({"vector-effect":"non-scaling-stroke"});
+      _gele.transform( rootState._matrix ).attr({"vector-effect":"non-scaling-stroke"});
     }else{
-      // _gele.attr({
-      //   transform:`rotate(${_rotate} ${context.fixedPoint[0]},${context.fixedPoint[1]}) ${rootState._matrix}`
-      // })
-      // SVG.get(`gid${obj.id}`).transform({rotation: `${_rotate} ${context.fixedPoint[0]} ${context.fixedPoint[1]}`});
-      console.log( context.actItem.rbox,SVG.get(`gid${obj.id}`).rbox() );
-      let _rbox = SVG.get(`gid${obj.id}`).rbox();
-      let _oldRbox = context.actItem.rbox;
       $(`#textId${obj.id}`).get(0).setAttribute("transform", `translate(${_point[0]} ${_point[1]}) scale(${_rateX} ${_rateY}) translate(${-_point[0]} ${-_point[1]})`);
       this.commit( "addAnt" );
     }

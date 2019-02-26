@@ -61,6 +61,10 @@ export default new Vuex.Store({
       let _rates = 1/SVG.get('canvas').viewbox().zoom;
       let _canvasBox = SVG.get('contentBg').rbox();
       return [ ( posi[0] - _canvasBox.x )*_rates , ( posi[1] - _canvasBox.y )*_rates ,posi[2]];
-    }
+    },
+    getMove: (state) => (posi) => {//将屏幕坐标转换成canvas坐标........
+      let _rates = 1/SVG.get('canvas').viewbox().zoom;
+      return [ posi[0]*_rates , posi[1]*_rates ,posi[2]];
+    },    
   }
 });
