@@ -295,6 +295,7 @@ export default {
                     "data-type":"text",
                     "data-id":_storeState.time,
                     "stroke-width": 1,
+                    "vector-effect":"non-scaling-stroke",
                     stroke:_storeState.defaultConfig.stroke,
                     width:0,
                     height:0,
@@ -332,6 +333,7 @@ export default {
                     stroke: _storeState.defaultConfig.stroke,
                     "stroke-width": _storeState.defaultConfig.strokeWidth,
                     class:"svgItem",
+                    "vector-effect":"non-scaling-stroke",
                     id:'id'+ _storeState.time,
                     'data-id':_storeState.time,
                     'data-type':"line"
@@ -433,6 +435,9 @@ export default {
     #canvas{
       
     }
+    .svgItem{
+      vector-effect:"non-scaling-stroke";
+    }    
     .actItem{
       .gSvgItem.antBorder{
         
@@ -441,7 +446,7 @@ export default {
   }
   .svg.xuanze{
       .svgItem{
-          cursor: pointer;
+        cursor: pointer;
     }
   }
   .svg.xiantiao,.svg.icon-test3,.svg.juxing1,.svg.tuoyuanxing{

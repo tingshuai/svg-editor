@@ -43,15 +43,14 @@ const actions = {
     rootState.Svg.selectAll("g.referenceLine").remove();//清除referenceLine 对齐线
     let _antBorder = rootState.Svg.select("#_antBorder");
     if( _ele.type == "path" ){
-      let newPath = rootState.Snap.path.map( _ele.attr('d').toString(),_gele.transform().localMatrix ).toString()+"Z";
+      let newPath = rootState.Snap.path.map( _ele.attr('d').toString(),_gele.transform().localMatrix ).toString();
       _ele.attr({d:newPath});
-      console.log(_gele.transform().localMatrix);
     }else if( _ele.type == "DIV" ){
       
     }else{
 
     }
-    SVG.get(`gid${obj.id}`).scale(1,1).translate(0,0);
+    SVG.get(`gid${obj.id}`).transform(new SVG.Matrix());
   },
   bindFocusEvent({ state, commit, rootState }){
     if(rootState.actLayerId != null){//判断是否有焦点....
@@ -78,12 +77,22 @@ const actions = {
   bindDrag({ state, commit, rootState ,rootGetters}){
     rootState.Svg.selectAll(".gSvgItem").forEach((ele,i,arr)=>{
       let _dataset,_boxMsg;
-      let onend = (e)=>{}
+      let onend = (e)=>{
+        if( SVG.get(`id${_dataset.id}`).type == "path" ){
+          let newPath = rootState.Snap.path.map( SVG.get(`id${_dataset.id}`).attr('d').toString(),rootState.Svg.select(`#gid${_dataset.id}`).transform().localMatrix ).toString();
+          SVG.get(`id${_dataset.id}`).attr({d:newPath});
+          SVG.get(`gid${_dataset.id}`).transform( new SVG.Matrix() );
+        }
+      };
       let onmove = (x,y,cx,cy,e)=>{
         if( e.shiftKey ){  Math.abs(x) > Math.abs(y) ? y = 0 : x = 0; }//按住shift 横移竖直移动.....
         let _posi = rootGetters.getMove([x,y,e]);//获取svg上的实际位移
         let _lineRate = rootGetters.getSvgPosi([_boxMsg.x,_boxMsg.y,e]);//获取svg上的实际坐标......
-        SVG.get(`id${_dataset.id}`).move(_posi[0] + _lineRate[0] , _posi[1] + _lineRate[1]);//开始移动....
+        if( SVG.get(`id${_dataset.id}`).type == "path" ){//path....
+          SVG.get(`gid${_dataset.id}`).transform({ "x":_posi[0],"y":_posi[1] });
+        }else{//普通元素......
+          SVG.get(`id${_dataset.id}`).move(_posi[0] + _lineRate[0] , _posi[1] + _lineRate[1]);//开始移动....
+        }
         e.ctrlKey ? null : this.dispatch("computeLine",e);//显示参考线......
       }
       let onstart = (cx,cy,e)=>{
@@ -110,15 +119,11 @@ const actions = {
     })
   },
   bindResize({ state, commit, rootState }){
-    let bind = (type)=>{
+    let bind = ( type )=>{
       let _id = null;
       let onend = (e)=>{
         e.stopPropagation();
-        e.eventType = "resize"
-        let _ele = SVG.get(`id${_id}`);
-        if(_ele.type == "path"){
-          this.dispatch("resizeEnd",{"e":e,"id":_id,"type":type});
-        }
+        this.dispatch("resizeEnd",{"e":e,"id":_id,"type":type});
       }
       let onmove = (x,y,cx,cy,e)=>{
         e.stopPropagation();
