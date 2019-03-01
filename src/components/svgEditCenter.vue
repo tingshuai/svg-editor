@@ -329,7 +329,7 @@ export default {
         case "xiantiao":{//线段
           if( _storeState.draw.timer && event.type == "mousemove" ){
               if( SVG.get(`id${_storeState.time}`) == null ){
-                let _line = _storeState.Draw.path(`M${this.svgMouseDownCoor[0]} ${this.svgMouseDownCoor[1]}L${_canvasMove[0]} ${_canvasMove[1]}`).attr({
+                let _line = _storeState.Draw.line(`${this.svgMouseDownCoor[0]}, ${this.svgMouseDownCoor[1]} ,${_canvasMove[0]}, ${_canvasMove[1]}`).attr({
                     stroke: _storeState.defaultConfig.stroke,
                     "stroke-width": _storeState.defaultConfig.strokeWidth,
                     class:"svgItem",
@@ -349,7 +349,10 @@ export default {
                 this.$store.dispatch( "addLayer", _storeState.time );
               }else{
                 SVG.get(`id${_storeState.time}`).attr({
-                  d:`M${this.svgMouseDownCoor[0]} ${this.svgMouseDownCoor[1]}L${_canvasMove[0]} ${_canvasMove[1]}`
+                  x1:`${this.svgMouseDownCoor[0]}`,
+                  y1:`${this.svgMouseDownCoor[1]}`,
+                  x2:`${_canvasMove[0]}`,
+                  y2:`${_canvasMove[1]}`
                 });
                 this.$store.commit('addAnt',_storeState.time);//重绘蚂蚁线......
               }

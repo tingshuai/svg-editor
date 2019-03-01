@@ -45,8 +45,10 @@ const actions = {
     if( _ele.type == "path" ){
       let newPath = rootState.Snap.path.map( _ele.attr('d').toString(),_gele.transform().localMatrix ).toString();
       _ele.attr({d:newPath});
-    }else if( _ele.type == "DIV" ){
-      
+    }else if( _ele.type == "line" ){
+      let _point1 = new SVG.Point(SVG.get(`#id${obj.id}`).attr('x1'),SVG.get(`#id${obj.id}`).attr('y1')).transform( new SVG.Matrix( rootState._matrix ) );
+      let _point2 = new SVG.Point(SVG.get(`#id${obj.id}`).attr('x2'),SVG.get(`#id${obj.id}`).attr('y2')).transform( new SVG.Matrix( rootState._matrix ) );
+      SVG.get(`#id${obj.id}`).attr({"x1":_point1.x,"y1":_point1.y,"x2":_point2.x,"y2":_point2.y});
     }else{
 
     }
@@ -118,9 +120,9 @@ const actions = {
       rotate:0
     })
   },
-  bindResize({ state, commit, rootState }){
+  bindResize({ state, commit, rootState ,rootGetters}){
     let bind = ( type )=>{
-      let _id = null;
+      let _id = null,_bbox;
       let onend = (e)=>{
         e.stopPropagation();
         this.dispatch("resizeEnd",{"e":e,"id":_id,"type":type});
@@ -128,20 +130,16 @@ const actions = {
       let onmove = (x,y,cx,cy,e)=>{
         e.stopPropagation();
         rootState.showAnt = false;
-        commit("resize",{"x":x,"y":y,"cx":cx,"cy":cy,"e":e,"type":type,id:_id});
+        commit("resize",{"x":x,"y":y,"cx":cx,"cy":cy,"e":e,"type":type,id:_id,"rootGetters":rootGetters,"_bbox":_bbox});
       }
       let onstart = (cx,cy,e)=>{
         //获取焦点元素ID
         let _dataset = e.srcElement.dataset;
         _id = _dataset.id;
+        _bbox = SVG.get(`id${_id}`).bbox()
         //定点坐标....
         state.fixedPoint[0] = Number(_dataset["fixedpoint_x"]);
         state.fixedPoint[1] = Number(_dataset["fixedpoint_y"]);
-        if( _dataset.type == "rotateBar" ){
-          let _box = rootState.Svg.select(`#${_dataset.type}`).getBBox();
-          state.fixedPoint[2] = _box.cx;
-          state.fixedPoint[3] = _box.cy;
-        }
         state.layer.find((val,i,arr)=>{
           if( val.id == _id ){
             state.actItem.matrix = val.matrix;
@@ -266,41 +264,14 @@ const mutations = {
     let _gele = rootState.Svg.select(`#gid${obj.id}`);
     let _antBorder = rootState.Svg.select("#_antBorder");
     let _box,_rotate = 0,_gbox;
-    if( SVG.get(`id${obj.id}`).type == "DIV" ){
-      _box = SVG.get(`textId${obj.id}`).gbox();
-    }else{
-      _box = SVG.get(`id${obj.id}`).bbox();
-    }    
+    let _curPoint = obj.rootGetters.getSvgPosi( [obj.e.pageX,obj.e.pageY,obj.e] );
     rootState.actLayerId = obj.id;
     context.itemMoveMsg.x = obj.x;
     context.itemMoveMsg.y = obj.y;
     rootState._matrix = new Snap.Matrix();
     let _rateX=1,_rateY=1,_point=[];
-    if( obj.type == "squareLT" ){
-      _rateX = (_box.width-obj.x)/_box.width;
-      _rateY = (_box.height-obj.y)/_box.height;
-    }else if( obj.type == "squareBL" ){
-      _rateX = (_box.width-obj.x)/_box.width;
-      _rateY = (_box.height+obj.y)/_box.height;
-    }else if( obj.type == "squareBR" ){
-      _rateY = (_box.height+obj.y)/_box.height;
-      _rateX = (_box.width+obj.x)/_box.width;
-    }else if( obj.type == "squareRT" ){
-      _rateX = (_box.width+obj.x)/_box.width;
-      _rateY = (_box.height-obj.y)/_box.height;
-    }else if( obj.type == "squareCT" ){
-      _rateX = 1;
-      _rateY = (_box.height-obj.y)/_box.height;
-    }else if( obj.type == "squareCR" ){
-      _rateY = 1;
-      _rateX = (_box.width+obj.x)/_box.width; 
-    }else if( obj.type == "squareBC" ){
-      _rateX = 1;
-      _rateY = (_box.height+obj.y)/_box.height;
-    }else if( obj.type == "squareCL" ){
-      _rateY = 1;
-      _rateX = (_box.width-obj.x)/_box.width;
-    }
+    _rateX = Math.abs( _curPoint[0]-context.fixedPoint[0] ) / obj._bbox.width;
+    _rateY = Math.abs( _curPoint[1]-context.fixedPoint[1] ) / obj._bbox.height;
     if( obj.e.altKey && !obj.e.shiftKey ){//只按下alt键
       _point[0] = _box.cx, _point[1] = _box.cy;
     }else if( obj.e.shiftKey && !obj.e.altKey &&  _rateX != 1 && _rateY != 1 ){//按下shift
@@ -310,6 +281,7 @@ const mutations = {
     }else{//都没按下
       _point = context.fixedPoint;
     }
+    _point = obj.rootGetters.getSvgPosi( _point );//获取svg上的实际坐标......
     if( obj.type == "rotateBar" ){//旋转....
       rootState._matrix = new Snap.Matrix();
       _rotate = Snap.angle( context.fixedPoint[0],context.fixedPoint[1], obj.e.offsetX,obj.e.offsetY )-180;
@@ -317,11 +289,11 @@ const mutations = {
     }else{
       rootState._matrix.scale(_rateX,_rateY,_point[0],_point[1]);
     }
-    if( _ele.type == "path"){
+    if( _ele.type == "path" || _ele.type == "line" ){
       this.dispatch("upLoadSvg");
-      _gele.transform( rootState._matrix ).attr({"vector-effect":"non-scaling-stroke"});
+      _gele.transform( rootState._matrix ).attr({ "vector-effect":"non-scaling-stroke" });
     }else{
-      $(`#textId${obj.id}`).get(0).setAttribute("transform", `translate(${_point[0]} ${_point[1]}) scale(${_rateX} ${_rateY}) translate(${-_point[0]} ${-_point[1]})`);
+      $(`#gid${obj.id}`).get(0).setAttribute("transform", `translate(${_point[0]} ${_point[1]}) scale(${_rateX} ${_rateY}) translate(${-_point[0]} ${-_point[1]})`);
       this.commit( "addAnt" );
     }
   },
@@ -334,9 +306,6 @@ const mutations = {
           let _gele = SVG.get(`#gid${__actId}`);
           let _lineBox = _ele.bbox();
           let _viewBox;
-          if( _ele.type == "DIV" ){
-            _lineBox = SVG.get(`textId${__actId}`).bbox();
-          }
           let _strockWidth = Number( _ele.attr("stroke-width"))+2;
           let _stroke = document.getElementById(`id${__actId}`).getAttribute("stroke")
           state.actItem.fill=_ele.attr("fill");
